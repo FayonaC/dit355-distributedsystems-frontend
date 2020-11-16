@@ -14,9 +14,9 @@ The public mirror can be found [here](https://github.com/dit341/group-00-web).
 2. Change the mosquitto.conf file by pasting in the below text into the top of the configuration file
 
     ```port 1883
-listener 9001
-protocol websockets
-log_type all```
+    listener 9001
+    protocol websockets
+    log_type all
 
 3. To run Mosquitto with the configuration file in the Windows Command Prompt
 
