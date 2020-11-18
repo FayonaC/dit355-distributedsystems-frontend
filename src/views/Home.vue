@@ -1,6 +1,7 @@
 <template>
   <div id="content-wrap">
     <b-jumbotron header="DentiPicks" lead="Find your new favourite dentist"></b-jumbotron>
+    <b-button v-on:click="publish">Publish</b-button>
   </div>
 </template>
 
@@ -49,6 +50,15 @@ export default {
     function onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
     }
+  },
+  methods: {
+    
+    publish() {
+      var message = new Paho.Message('Greetings')
+      message.topic = 'test'
+      client.publish(message)
+    }
+
   }
 }
 </script>
