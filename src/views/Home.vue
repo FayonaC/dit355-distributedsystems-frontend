@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Paho from '../../libraries/paho.javascript-1.0.3/paho-mqtt.js'
+import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
 
 export default {
   name: 'home',
@@ -17,7 +17,8 @@ export default {
   mounted() {
     // Create a client instance
     console.log('hi')
-    var client = new Paho.MQTT.Client(location.hostname, Number(location.port), 'clientId')
+    var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
+
     console.log(client)
 
     // set callback handlers
@@ -31,8 +32,8 @@ export default {
     function onConnect() {
       // Once a connection has been made, make a subscription and send a message.
       console.log('onConnect')
-      client.subscribe('World')
-      var message = new Paho.MQTT.Message('Hello')
+      client.subscribe('test')
+      var message = new Paho.Message('Hello')
       message.destinationName = 'World'
       client.send(message)
     }
