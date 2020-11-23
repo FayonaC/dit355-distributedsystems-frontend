@@ -1,0 +1,30 @@
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+body {
+    background-color: #E5E5E5;
+}
+
+nav {
+    background-color: #afede2;
+}
+
+footer {
+    padding-top: 0.5rem;
+    background-color: #afede2;
+}
+
+#big-box {
+    background-color: #c4c4c4;
+}
+
+#info-box {
+    background-color: #ffffff;
+}
+
+#map {
+    background-color: lightgreen;
+}
