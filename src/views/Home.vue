@@ -45,9 +45,9 @@ export default {
     function onConnect() {
       // Once a connection has been made, make a subscription and send a message.
       console.log('Connected')
-      client.subscribe('test')
+      client.subscribe('Dentists')
       var message = new Paho.Message('Hello')
-      message.destinationName = 'World'
+      message.destinationName = 'Toodly pipski!'
       client.send(message)
     }
 
