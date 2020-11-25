@@ -17,7 +17,8 @@ The public mirror can be found [here](https://github.com/dit341/group-00-web).
    2. Choose Properties
    3. Navigate to the Security tab
    4. Click on Users, click Edit to change Permissions
-   5. Select 'Modify' and 'Write'
+   5. Click on Users again
+   6. Select 'Modify' and 'Write'
 
 3. Change the mosquitto.conf file by pasting in the below text into the top of the configuration file.
 
