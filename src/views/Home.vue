@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-shrink-0">
+  <div >
     <b-container>
       <b-row>
         <b-col class="text-center" id="big-box">
@@ -17,6 +17,7 @@
         </b-col>
       </b-row>
     </b-container>
+    <v-button> <router-link to="/booking">Bookings</router-link> </v-button>
   </div>
 </template>
 
