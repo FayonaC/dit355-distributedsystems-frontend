@@ -16,12 +16,10 @@
         ></b-form-input>
 
         <label>Dentist ID </label>
-        <b-form-select
+        <b-form-input
           v-model="message.dentistId"
-          :options="dentistId"
           placeholder="Enter your dentist ID"
-
-        ></b-form-select>
+        ></b-form-input>
 
          <label>Issuance Number </label>
         <b-form-input
@@ -48,16 +46,17 @@
           :options="appointmentTimes"
         ></b-form-select> -->
 
-        <b-button>Submit Booking</b-button>
+        <b-button v-on:click="publish">Submit Booking</b-button>
       </form>
     </b-container>
   </div>
 </template>
 
 <script>
+import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
 
 export default {
-  name: 'booking-form',
+  name: 'booking',
   data() {
     return {
       message: {
@@ -70,8 +69,69 @@ export default {
     }
   },
 
+  mounted() {
+    // Create a client instance
+    var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
+
+    // set callback handlers
+    client.onConnectionLost = onConnectionLost
+    client.onMessageArrived = onMessageArrived
+
+    // connect the client
+    client.connect({ onSuccess: onConnect })
+
+    // called when the client connects
+    function onConnect() {
+      // Once a connection has been made, make a subscription and send a message.
+      console.log('Connected')
+      client.subscribe('Dentists')
+      var message = new Paho.Message('Hello')
+      message.destinationName = 'Toodly pipski!'
+      client.send(message)
+    }
+
+    // called when the client loses its connection
+    function onConnectionLost(responseObject) {
+      if (responseObject.errorCode !== 0) {
+        console.log('onConnectionLost:' + responseObject.errorMessage)
+      }
+    }
+
+    // called when a message arrives
+    function onMessageArrived(message) {
+      console.log('onMessageArrived:' + message.payloadString)
+    }
+  },
   methods: {
-    // create a booking method that sends the correct information needed for the JSON and publishes it
+    publish() {
+      var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
+
+      // set callback handlers
+      client.onConnectionLost = onConnectionLost
+      client.onMessageArrived = onMessageArrived
+
+      // connect the client
+      client.connect({ onSuccess: onConnect })
+
+      // called when the client connects
+      function onConnect() {
+        var message = new Paho.Message('Greetings')
+        message.topic = 'Dentists'
+        client.publish(message)
+      }
+
+      // called when the client loses its connection
+      function onConnectionLost(responseObject) {
+        if (responseObject.errorCode !== 0) {
+          console.log('onConnectionLost:' + responseObject.errorMessage)
+        }
+      }
+
+      // called when a message arrives
+      function onMessageArrived(message) {
+        console.log('onMessageArrived:' + message.payloadString)
+      }
+    }
   }
 }
 </script>
