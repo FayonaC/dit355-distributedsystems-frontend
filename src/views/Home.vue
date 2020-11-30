@@ -1,7 +1,22 @@
 <template>
-  <div id="content-wrap">
-    <b-jumbotron header="DentiPicks" lead="Find your new favourite dentist"></b-jumbotron>
-    <b-button v-on:click="publish">Publish</b-button>
+  <div class="flex-shrink-0">
+    <b-container>
+      <b-row>
+        <b-col class="text-center" id="big-box">
+          <p>Text about the website...</p>
+          <p>How to book...</p>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col cols="7" id="map">
+          <p>[INSERT MAPBOX COMPONENT]</p>
+        </b-col>
+        <b-col id="info-box">
+          <p>Info-box</p>
+          <!-- Use dynamic components here for info-box functionality -->
+        </b-col>
+      </b-row>
+    </b-container>
   </div>
 </template>
 
@@ -17,10 +32,7 @@ export default {
   },
   mounted() {
     // Create a client instance
-    console.log('hi')
     var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
-
-    console.log(client)
 
     // set callback handlers
     client.onConnectionLost = onConnectionLost
@@ -32,7 +44,7 @@ export default {
     // called when the client connects
     function onConnect() {
       // Once a connection has been made, make a subscription and send a message.
-      console.log('onConnect')
+      console.log('Connected')
       client.subscribe('test')
       var message = new Paho.Message('Hello')
       message.destinationName = 'World'
