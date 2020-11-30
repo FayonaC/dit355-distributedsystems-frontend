@@ -54,6 +54,7 @@
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
+var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
 
 export default {
   name: 'booking',
@@ -71,40 +72,19 @@ export default {
 
   mounted() {
     // Create a client instance
-    var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
-
-    // set callback handlers
-    client.onConnectionLost = onConnectionLost
-    client.onMessageArrived = onMessageArrived
-
-    // connect the client
-    client.connect({ onSuccess: onConnect })
-
-    // called when the client connects
-    function onConnect() {
-      // Once a connection has been made, make a subscription and send a message.
-      console.log('Connected')
-      client.subscribe('Dentists')
-      var message = new Paho.Message('Hello')
-      message.destinationName = 'Toodly pipski!'
-      client.send(message)
-    }
-
-    // called when the client loses its connection
-    function onConnectionLost(responseObject) {
-      if (responseObject.errorCode !== 0) {
-        console.log('onConnectionLost:' + responseObject.errorMessage)
-      }
-    }
-
-    // called when a message arrives
-    function onMessageArrived(message) {
-      console.log('onMessageArrived:' + message.payloadString)
-    }
+    this.subscribe()
   },
   methods: {
-    publish() {
-      var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
+
+    subscribe() {
+      // user input is taken and put into an obj called "booking"
+      const booking = {
+        userid: this.message.userId,
+        requestid: this.message.requestId,
+        dentistid: this.message.dentistId,
+        issuance: this.message.issuance,
+        time: this.message.time
+      }
 
       // set callback handlers
       client.onConnectionLost = onConnectionLost
@@ -113,19 +93,14 @@ export default {
       // connect the client
       client.connect({ onSuccess: onConnect })
 
-      // user input is taken and put into an obj called "booking"
-      const booking = {
-        userId: this.message.userId,
-        requestId: this.message.requestId,
-        dentistId: this.message.dentistId,
-        issuance: this.message.issuance,
-        time: this.message.time
-      }
       // called when the client connects
       function onConnect() {
-        var message = new Paho.Message(JSON.stringify(booking))
-        message.topic = 'Dentists'
-        client.publish(message)
+        // Once a connection has been made, make a subscription and send a message.
+        console.log('Connected')
+        client.subscribe('BookingResponse')
+        var message = new Paho.Message('Hello')
+        message.destinationName = 'Toodly pipski!'
+        client.send(message)
       }
 
       // called when the client loses its connection
@@ -138,7 +113,24 @@ export default {
       // called when a message arrives
       function onMessageArrived(message) {
         console.log('onMessageArrived:' + message.payloadString)
+        if (message.requestid === booking.requestId) {
+          console.log('Booking response received')
+        }
       }
+    },
+    publish() {
+      const booking = {
+        userid: this.message.userId,
+        requestid: this.message.requestId,
+        dentistid: this.message.dentistId,
+        issuance: this.message.issuance,
+        time: this.message.time
+      }
+
+      var message = new Paho.Message(JSON.stringify(booking))
+      message.topic = 'BookingRequest'
+      client.publish(message)
+      // this.subscribe()
     }
   }
 }
