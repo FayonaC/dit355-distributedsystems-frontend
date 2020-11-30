@@ -5,7 +5,7 @@
       <form>
         <label>User ID </label>
         <b-form-input
-          v-model="message.name"
+          v-model="message.userId"
           placeholder="Enter your user ID"
         ></b-form-input>
 
@@ -113,9 +113,17 @@ export default {
       // connect the client
       client.connect({ onSuccess: onConnect })
 
+      // user input is taken and put into an obj called "booking"
+      const booking = {
+        userId: this.message.userId,
+        requestId: this.message.requestId,
+        dentistId: this.message.dentistId,
+        issuance: this.message.issuance,
+        time: this.message.time
+      }
       // called when the client connects
       function onConnect() {
-        var message = new Paho.Message('Greetings')
+        var message = new Paho.Message(JSON.stringify(booking))
         message.topic = 'Dentists'
         client.publish(message)
       }
