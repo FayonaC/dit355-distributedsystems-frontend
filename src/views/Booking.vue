@@ -1,50 +1,56 @@
 <template>
   <div>
+    <h1>Appointment Booking Form</h1>
     <b-container>
-      <h1>Appointment Booking Form</h1>
+      <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
+        {{ msg }}
+      </b-alert>
+      <b-alert v-model="showDismissibleSuccess" variant="success" dismissible>
+        {{ msg }}
+      </b-alert>
       <form>
         <label>User ID </label>
-        <b-form-input
-          v-model="message.userId"
+        <b-form-input type="number"
+          v-model.number="booking.userId"
           placeholder="Enter your user ID"
         ></b-form-input>
 
-         <label>Request ID </label>
-        <b-form-input
-          v-model="message.requestId"
+        <label>Request ID </label>
+        <b-form-input type="number"
+          v-model.number="booking.requestId"
           placeholder="Enter your request ID"
         ></b-form-input>
 
         <label>Dentist ID </label>
-        <b-form-input
-          v-model="message.dentistId"
+        <b-form-input type="number"
+          v-model.number="booking.dentistId"
           placeholder="Enter your dentist ID"
         ></b-form-input>
 
-         <label>Issuance Number </label>
-        <b-form-input
-          v-model="message.issuance"
+        <label>Issuance Number </label>
+        <b-form-input type="number"
+          v-model.number="booking.issuance"
           placeholder="Enter your issuance number"
         ></b-form-input>
 
         <label>Date and Time</label>
         <b-form-input
-          v-model="message.time"
+          v-model="booking.time"
           placeholder="Enter your appointment date and time"
         ></b-form-input>
 
-        <!-- For calender and appointment time
-        <label>Date and Time </label>
-        <b-form-datepicker
-          id="date-blah"
-          v-model="message.date"
-        ></b-form-datepicker>
+      <!-- For calender and appointment time
+      <label>Date and Time </label>
+      <b-form-datepicker
+        id="date-blah"
+        v-model="message.date"
+      ></b-form-datepicker>
 
-        <label>Appointment Time </label>
-        <b-form-select
-          v-model="message.priority"
-          :options="appointmentTimes"
-        ></b-form-select> -->
+      <label>Appointment Time </label>
+      <b-form-select
+        v-model="message.priority"
+        :options="appointmentTimes"
+      ></b-form-select> -->
 
         <b-button v-on:click="publish">Submit Booking</b-button>
       </form>
@@ -60,13 +66,17 @@ export default {
   name: 'booking',
   data() {
     return {
-      message: {
-        userId: '',
-        requestId: '',
-        dentistId: '',
-        issuance: '',
+      booking: {
+        userId: null,
+        requestId: null,
+        dentistId: null,
+        issuance: null,
         time: ''
-      }
+      },
+      showDismissibleAlert: false,
+      showDismissibleSuccess: false,
+      msg: ''
+
     }
   },
 
@@ -77,18 +87,9 @@ export default {
   methods: {
 
     subscribe() {
-      // user input is taken and put into an obj called "booking"
-      const booking = {
-        userid: this.message.userId,
-        requestid: this.message.requestId,
-        dentistid: this.message.dentistId,
-        issuance: this.message.issuance,
-        time: this.message.time
-      }
-
       // set callback handlers
       client.onConnectionLost = onConnectionLost
-      client.onMessageArrived = onMessageArrived
+      client.onMessageArrived = this.onMessageArrived
 
       // connect the client
       client.connect({ onSuccess: onConnect })
@@ -109,22 +110,26 @@ export default {
           console.log('onConnectionLost:' + responseObject.errorMessage)
         }
       }
-
-      // called when a message arrives
-      function onMessageArrived(message) {
-        console.log('onMessageArrived:' + message.payloadString)
-        if (message.requestid === booking.requestId) {
-          console.log('Booking response received')
-        }
+    },
+    // called when a message arrives
+    onMessageArrived(message) {
+      console.log('onMessageArrived:' + message.payloadString)
+      if (JSON.parse(message.payloadString).requestid === this.booking.requestId) {
+        console.log(JSON.parse(message.payloadString).requestid)
+        this.msg = 'Booking Response Successful!'
+        this.showDismissibleSuccess = true
+      } else {
+        this.msg = 'None!'
+        this.showDismissibleAlert = true
       }
     },
     publish() {
       const booking = {
-        userid: this.message.userId,
-        requestid: this.message.requestId,
-        dentistid: this.message.dentistId,
-        issuance: this.message.issuance,
-        time: this.message.time
+        userid: this.booking.userId,
+        requestid: this.booking.requestId,
+        dentistid: this.booking.dentistId,
+        issuance: this.booking.issuance,
+        time: this.booking.time
       }
 
       var message = new Paho.Message(JSON.stringify(booking))
