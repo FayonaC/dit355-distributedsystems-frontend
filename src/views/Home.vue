@@ -1,28 +1,15 @@
 <template>
-  <div >
+  <div>
     <b-container>
-      <b-row>
-        <b-col class="text-center" id="big-box">
-          <p>Text about the website...</p>
-          <p>How to book...</p>
-        </b-col>
-      </b-row>
-      <b-row>
-        <b-col cols="7" id="map">
-          <p>[INSERT MAPBOX COMPONENT]</p>
-        </b-col>
-        <b-col id="info-box">
-          <p>Info-box</p>
-          <!-- Use dynamic components here for info-box functionality -->
-        </b-col>
-      </b-row>
+      <div id="map" class="map pad2"></div>
     </b-container>
-    <v-button> <router-link to="/booking">Bookings</router-link> </v-button>
   </div>
 </template>
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
+import mapboxgl from 'mapbox-gl'
+mapboxgl.accessToken = '' // Insert access token here
 
 export default {
   name: 'home',
@@ -32,6 +19,14 @@ export default {
     }
   },
   mounted() {
+    var map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [11.974560, 57.708870],
+      zoom: 12
+    })
+    map.location()
+
     // Create a client instance
     var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
 

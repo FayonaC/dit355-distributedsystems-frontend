@@ -46,10 +46,13 @@ The public mirror can be found [here](https://github.com/dit341/group-00-web).
 
     `npm install`
 
-4. Run the frontend server
+4. Paste in MapBox access token on line 12 in Home.vue
+
+5. Run the frontend server
  
     `npm run serve`
 
 ### External Documentation
 [Paho JSDoc](https://www.eclipse.org/paho/files/jsdoc/index.html) 
 
+[MapBox Quick Start Guide](https://docs.mapbox.com/mapbox-gl-js/api/)
