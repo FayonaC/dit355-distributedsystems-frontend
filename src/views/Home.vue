@@ -41,14 +41,14 @@ export default {
     }).addTo(map)
 
     // These are hardcoded locations for the initial dental offices
-    var dentistOneMarker = L.marker([57.707619, 11.969388]).addTo(map) // Adds the first dentist to the map with coordinates longitude, latitude
+    /* var dentistOneMarker = L.marker([57.707619, 11.969388]).addTo(map) // Adds the first dentist to the map with coordinates longitude, latitude
     console.log(dentistOneMarker)
 
     var dentistTwoMarker = L.marker([57.685255, 11.942625]).addTo(map) // Adds the second dentist to the map with coordinates longitude, latitude
     console.log(dentistTwoMarker)
 
     var dentistThreeMarker = L.marker([57.709872, 11.940386]).addTo(map) // Adds the third dentist to the map with coordinates longitude, latitude
-    console.log(dentistThreeMarker)
+    console.log(dentistThreeMarker) */
 
     /* var map = new mapboxgl.Map({
       container: 'map',
@@ -88,47 +88,15 @@ export default {
     // called when a message arrives
     function onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
-      /* var mapData = JSON.stringify(message.data)
-      console.log('The data: ' + mapData)
-      var longitudeMap = mapData.longitude
-      var latitudeMap = mapData.latitude
-      console.log('This is longitude: ' + longitudeMap)
-      var marker = L.marker(latitudeMap, longitudeMap).addTo(map)
-      console.log(marker)
-
-      /* var marker = document.createElement('div')
-      marker.className = 'marker'
-      markers.push(marker)
-
-      mapMarkers.push(new mapboxgl.Marker(marker)
-        .setLngLat(coordinates)
-        .addTo(map))
-
-      dentistGeoJSON(mapData) */
-    }
-    /* function dentistGeoJSON(mapData) {
-      var geojson = {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'Point',
-          coordinates: [mapData.latitude, mapData.longitude]
-        }
-      }
-      geoJsons.push(geojson)
-      map.addLayer({
-        id: 'id',
-        type: 'symbol',
-        source: {
-          type: 'geojson',
-          data: geojson
-        },
-        layout: {
-          icon: mapMarkers
-        }
+      var parsing = JSON.parse(message.payloadString)
+      parsing.dentists.forEach(function (dentists, i) {
+        dentists.id = i
+        var longitudeMap = (parsing.dentists[i].coordinate.longitude)
+        var latitudeMap = (parsing.dentists[i].coordinate.latitude)
+        var marker = L.marker([longitudeMap, latitudeMap]).addTo(map)
+        console.log(marker)
       })
     }
-  }, */
   },
   methods: {
     publish() {
