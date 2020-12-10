@@ -1,16 +1,17 @@
 <template>
   <div>
     <b-container>
-      <div id="map" class="map pad2"></div>
+      <div id="map"></div>
     </b-container>
   </div>
 </template>
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
-import mapboxgl from 'mapbox-gl'
-import d3 from 'd3'
-mapboxgl.accessToken = '' // Insert access token here
+// import mapboxgl from 'mapbox-gl'
+// import d3 from 'd3'
+// mapboxgl.accessToken = '' // Insert access token here
+import L from 'leaflet'
 
 export default {
   name: 'home',
@@ -20,13 +21,42 @@ export default {
     }
   },
   mounted() {
-    var map = new mapboxgl.Map({
+    // var requestCount = 0
+    // var mapMarkers = []
+    // var locations = []
+    // var markers = []
+    // var geoJsons = []
+    // var lines = []
+    // var id_Strings = []
+
+    var map = L.map('map').setView([57.708870, 11.974560], 12)
+
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      maxZoom: 18,
+      id: 'mapbox/streets-v11',
+      tileSize: 512,
+      zoomOffset: -1,
+      accessToken: 'pk.eyJ1IjoiZGlzdHJpYnN5cyIsImEiOiJja2llZml2aG0xc2dxMnhvNW55bm1hd3U1In0.V731WqpeBOC6a8wwZUwwAA'
+    }).addTo(map)
+
+    // These are hardcoded locations for the initial dental offices
+    var dentistOneMarker = L.marker([57.707619, 11.969388]).addTo(map) // Adds the first dentist to the map with coordinates longitude, latitude
+    console.log(dentistOneMarker)
+
+    var dentistTwoMarker = L.marker([57.685255, 11.942625]).addTo(map) // Adds the second dentist to the map with coordinates longitude, latitude
+    console.log(dentistTwoMarker)
+
+    var dentistThreeMarker = L.marker([57.709872, 11.940386]).addTo(map) // Adds the third dentist to the map with coordinates longitude, latitude
+    console.log(dentistThreeMarker)
+
+    /* var map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v11',
       center: [11.974560, 57.708870],
       zoom: 12
     })
-    // var marker = new mapboxgl.Marker()
+    // var marker = new mapboxgl.Marker() */
 
     // Create a client instance
     var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
@@ -58,63 +88,47 @@ export default {
     // called when a message arrives
     function onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
+      /* var mapData = JSON.stringify(message.data)
+      console.log('The data: ' + mapData)
+      var longitudeMap = mapData.longitude
+      var latitudeMap = mapData.latitude
+      console.log('This is longitude: ' + longitudeMap)
+      var marker = L.marker(latitudeMap, longitudeMap).addTo(map)
+      console.log(marker)
+
+      /* var marker = document.createElement('div')
+      marker.className = 'marker'
+      markers.push(marker)
+
+      mapMarkers.push(new mapboxgl.Marker(marker)
+        .setLngLat(coordinates)
+        .addTo(map))
+
+      dentistGeoJSON(mapData) */
     }
-
-    var mapData = Paho.Message
-
-    map.on('load', function () {
-      // We use D3 to fetch the JSON here so that we can parse and use it separately
-      // from GL JS's use in the added source. You can use any request method (library
-      // or otherwise) that you want.
-      d3.json(mapData,
-        function (err, data) {
-          if (err) throw err
-          // save full coordinate list for later
-          var coordinates = data.dentists.coordinate
-          // start by showing just the first coordinate
-          data.dentists.coordinate = [coordinates[0]]
-          // add it to the map
-          map.addSource('trace', { type: 'geojson', data: data })
-          map.addLayer({
-            id: 'trace',
-            type: 'line',
-            source: 'trace'
-          })
-          // setup the viewport
-          map.jumpTo({ center: coordinates[0], zoom: 14 })
-          map.setPitch(30)
-          // on a regular basis, add more coordinates from the saved list and update the map
-          var i = 0
-          var timer = window.setInterval(function () {
-            if (i < coordinates.length) {
-              data.dentists.coordinate.push(
-                coordinates[i]
-              )
-              map.getSource('trace').setData(data)
-              map.panTo(coordinates[i])
-              i++
-            } else {
-              window.clearInterval(timer)
-            }
-          }, 10)
+    /* function dentistGeoJSON(mapData) {
+      var geojson = {
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'Point',
+          coordinates: [mapData.latitude, mapData.longitude]
         }
-      )
-      // mapData.dentists.forEach(function (dentist, i) {
-      //  dentist.properties.id = i
-      // })
-
-    /* map.on('load', function (e) {
+      }
+      geoJsons.push(geojson)
       map.addLayer({
+        id: 'id',
+        type: 'symbol',
         source: {
-          type: 'json',
-          data: mapData
+          type: 'geojson',
+          data: geojson
         },
         layout: {
-          icon: marker
+          icon: mapMarkers
         }
       })
-      marker.addTo(map) */
-    })
+    }
+  }, */
   },
   methods: {
     publish() {
