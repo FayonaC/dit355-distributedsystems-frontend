@@ -1,15 +1,14 @@
 <template>
   <div>
     <b-container>
-      <div id="map" class="map pad2"></div>
+      <div id="map"></div>
     </b-container>
   </div>
 </template>
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
-import mapboxgl from 'mapbox-gl'
-mapboxgl.accessToken = '' // Insert access token here
+import L from 'leaflet'
 
 export default {
   name: 'home',
@@ -19,13 +18,16 @@ export default {
     }
   },
   mounted() {
-    var map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [11.974560, 57.708870],
-      zoom: 12
-    })
-    map.location()
+    var map = L.map('map').setView([57.708870, 11.974560], 12)
+
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      maxZoom: 18,
+      id: 'mapbox/streets-v11',
+      tileSize: 512,
+      zoomOffset: -1,
+      accessToken: '' // Insert access token here 
+    }).addTo(map)
 
     // Create a client instance
     var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
@@ -57,6 +59,14 @@ export default {
     // called when a message arrives
     function onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
+      var parsing = JSON.parse(message.payloadString) // Parsing the incoming JSON (message) 
+      parsing.dentists.forEach(function (dentists, i) { // Iterates through all the dentists in the JSON
+        dentists.id = i 
+        var longitudeMap = (parsing.dentists[i].coordinate.longitude) // Saves the longitude in a variable
+        var latitudeMap = (parsing.dentists[i].coordinate.latitude) // Saves the latitude in a variable
+        var marker = L.marker([longitudeMap, latitudeMap]).addTo(map) // Uses the stored coordinates and adds them to the map as markers
+        console.log(marker)
+      })
     }
   },
   methods: {
