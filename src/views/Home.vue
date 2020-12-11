@@ -8,9 +8,6 @@
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
-// import mapboxgl from 'mapbox-gl'
-// import d3 from 'd3'
-// mapboxgl.accessToken = '' // Insert access token here
 import L from 'leaflet'
 
 export default {
@@ -21,14 +18,6 @@ export default {
     }
   },
   mounted() {
-    // var requestCount = 0
-    // var mapMarkers = []
-    // var locations = []
-    // var markers = []
-    // var geoJsons = []
-    // var lines = []
-    // var id_Strings = []
-
     var map = L.map('map').setView([57.708870, 11.974560], 12)
 
     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
@@ -37,26 +26,8 @@ export default {
       id: 'mapbox/streets-v11',
       tileSize: 512,
       zoomOffset: -1,
-      accessToken: 'pk.eyJ1IjoiZGlzdHJpYnN5cyIsImEiOiJja2llZml2aG0xc2dxMnhvNW55bm1hd3U1In0.V731WqpeBOC6a8wwZUwwAA'
+      accessToken: '' // Insert access token here 
     }).addTo(map)
-
-    // These are hardcoded locations for the initial dental offices
-    /* var dentistOneMarker = L.marker([57.707619, 11.969388]).addTo(map) // Adds the first dentist to the map with coordinates longitude, latitude
-    console.log(dentistOneMarker)
-
-    var dentistTwoMarker = L.marker([57.685255, 11.942625]).addTo(map) // Adds the second dentist to the map with coordinates longitude, latitude
-    console.log(dentistTwoMarker)
-
-    var dentistThreeMarker = L.marker([57.709872, 11.940386]).addTo(map) // Adds the third dentist to the map with coordinates longitude, latitude
-    console.log(dentistThreeMarker) */
-
-    /* var map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [11.974560, 57.708870],
-      zoom: 12
-    })
-    // var marker = new mapboxgl.Marker() */
 
     // Create a client instance
     var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
@@ -88,12 +59,12 @@ export default {
     // called when a message arrives
     function onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
-      var parsing = JSON.parse(message.payloadString)
-      parsing.dentists.forEach(function (dentists, i) {
-        dentists.id = i
-        var longitudeMap = (parsing.dentists[i].coordinate.longitude)
-        var latitudeMap = (parsing.dentists[i].coordinate.latitude)
-        var marker = L.marker([longitudeMap, latitudeMap]).addTo(map)
+      var parsing = JSON.parse(message.payloadString) // Parsing the incoming JSON (message) 
+      parsing.dentists.forEach(function (dentists, i) { // Iterates through all the dentists in the JSON
+        dentists.id = i 
+        var longitudeMap = (parsing.dentists[i].coordinate.longitude) // Saves the longitude in a variable
+        var latitudeMap = (parsing.dentists[i].coordinate.latitude) // Saves the latitude in a variable
+        var marker = L.marker([longitudeMap, latitudeMap]).addTo(map) // Uses the stored coordinates and adds them to the map as markers
         console.log(marker)
       })
     }

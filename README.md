@@ -46,7 +46,7 @@ The public mirror can be found [here](https://github.com/dit341/group-00-web).
 
     `npm install`
 
-4. Paste in MapBox access token on line 12 in Home.vue
+4. Paste in MapBox access token on line 29 in Home.vue in the mounted() method
 
 5. Run the frontend server
  
@@ -54,5 +54,7 @@ The public mirror can be found [here](https://github.com/dit341/group-00-web).
 
 ### External Documentation
 [Paho JSDoc](https://www.eclipse.org/paho/files/jsdoc/index.html) 
+
+[Leaflet Quick Start Guide](https://leafletjs.com/examples/quick-start/)
 
 [MapBox Quick Start Guide](https://docs.mapbox.com/mapbox-gl-js/api/)
