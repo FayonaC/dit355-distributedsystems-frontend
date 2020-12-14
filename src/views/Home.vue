@@ -26,7 +26,7 @@ export default {
       id: 'mapbox/streets-v11',
       tileSize: 512,
       zoomOffset: -1,
-      accessToken: '' // Insert access token here 
+      accessToken: '' // Insert access token here
     }).addTo(map)
 
     // Create a client instance
@@ -59,13 +59,29 @@ export default {
     // called when a message arrives
     function onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
-      var parsing = JSON.parse(message.payloadString) // Parsing the incoming JSON (message) 
+      var parsing = JSON.parse(message.payloadString) // Parsing the incoming JSON (message)
       parsing.dentists.forEach(function (dentists, i) { // Iterates through all the dentists in the JSON
-        dentists.id = i 
+        dentists.id = i
         var longitudeMap = (parsing.dentists[i].coordinate.longitude) // Saves the longitude in a variable
         var latitudeMap = (parsing.dentists[i].coordinate.latitude) // Saves the latitude in a variable
         var marker = L.marker([longitudeMap, latitudeMap]).addTo(map) // Uses the stored coordinates and adds them to the map as markers
-        console.log(marker)
+        // getting data we need for the popups
+        var officeName = (parsing.dentists[i].name)
+        var dentistNum = (parsing.dentists[i].dentists)
+        var address = (parsing.dentists[i].address)
+        var city = (parsing.dentists[i].city)
+        var monHours = (parsing.dentists[i].openinghours.monday)
+        var tuesHours = (parsing.dentists[i].openinghours.tuesday)
+        var wedHours = (parsing.dentists[i].openinghours.wednesday)
+        var thursHours = (parsing.dentists[i].openinghours.thursday)
+        var friHours = (parsing.dentists[i].openinghours.friday)
+
+        // adds dental office information as popups on markers
+
+        marker.bindPopup('<b>Dental office:</b> ' + officeName + '<br><b>Address:</b> ' + address + ', <br>' + city +
+        '<br><b>Number of dentists:</b> ' + dentistNum + '<br><b>Opening hours:</b> ' + '<br>Monday: ' + monHours +
+        '<br>Tuesday: ' + tuesHours + '<br>Wednesday: ' + wedHours + '<br>Thursday: ' + thursHours + '<br>Friday: ' +
+        friHours)
       })
     }
   },
