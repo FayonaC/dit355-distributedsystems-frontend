@@ -1,7 +1,17 @@
 <template>
   <div>
-    <b-container>
-      <div id="map"></div>
+    <b-container fluid>
+      <div class="row">
+        <div class="col-3">
+          <div class="calendar">
+            <label>Pick a date to see available dentists</label>
+            <b-form-datepicker id="date" v-model="date"></b-form-datepicker>
+          </div>
+        </div>
+      <div class="col-9">
+        <div id="map"></div>
+      </div>
+      </div>
     </b-container>
   </div>
 </template>
@@ -14,6 +24,7 @@ export default {
   name: 'home',
   data() {
     return {
+      date: null,
       message: 'none'
     }
   },
@@ -26,7 +37,7 @@ export default {
       id: 'mapbox/streets-v11',
       tileSize: 512,
       zoomOffset: -1,
-      accessToken: '' // Insert access token here
+      accessToken: 'pk.eyJ1IjoiZGlzdHJpYnN5cyIsImEiOiJja2llZml2aG0xc2dxMnhvNW55bm1hd3U1In0.V731WqpeBOC6a8wwZUwwAA' // Insert access token here
     }).addTo(map)
 
     // Create a client instance
