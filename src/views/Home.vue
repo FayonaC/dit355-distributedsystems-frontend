@@ -75,7 +75,7 @@ export default {
         dentists.id = i
         var longitudeMap = (parsing.dentists[i].coordinate.longitude) // Saves the longitude in a variable
         var latitudeMap = (parsing.dentists[i].coordinate.latitude) // Saves the latitude in a variable
-        var marker = L.marker([longitudeMap, latitudeMap]).addTo(map) // Uses the stored coordinates and adds them to the map as markers
+        var marker = L.marker([latitudeMap, longitudeMap]).addTo(map) // Uses the stored coordinates and adds them to the map as markers
         // getting data we need for the popups
         var officeName = (parsing.dentists[i].name)
         var dentistNum = (parsing.dentists[i].dentists)
