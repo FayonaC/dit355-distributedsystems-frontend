@@ -1,58 +1,34 @@
 <template>
   <div>
-    <h1>Appointment Booking Form</h1>
     <b-container>
+      <h1>Office Name</h1>
+      <h3>Available appointments:</h3>
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
       </b-alert>
       <b-alert v-model="showDismissibleSuccess" variant="success" dismissible>
         {{ msg }}
       </b-alert>
+      <div class="button-times">
+        <div class="row">
+        <div class="col-3">
+          <b-button pill>07:00-07:30</b-button>
+        </div>
+        <div class="col-3">
+          <b-button pill>07:30-08:00</b-button>
+        </div>
+        <div class="col-3">
+          <b-button pill>08:00-08:30</b-button>
+        </div>
+      </div>
+      </div>
       <form>
-        <label>User ID </label>
-        <b-form-input type="number"
-          v-model.number="booking.userId"
-          placeholder="Enter your user ID"
-        ></b-form-input>
-
-        <label>Request ID </label>
-        <b-form-input type="number"
-          v-model.number="booking.requestId"
-          placeholder="Enter your request ID"
-        ></b-form-input>
-
-        <label>Dentist ID </label>
-        <b-form-input type="number"
-          v-model.number="booking.dentistId"
-          placeholder="Enter your dentist ID"
-        ></b-form-input>
-
-        <label>Issuance Number </label>
-        <b-form-input type="number"
-          v-model.number="booking.issuance"
-          placeholder="Enter your issuance number"
-        ></b-form-input>
-
-        <label>Date and Time</label>
+        <label>Enter your user ID (numbers only)</label>
         <b-form-input
-          v-model="booking.time"
-          placeholder="Enter your appointment date and time"
+          v-model.number="booking.userId"
+          placeholder="Ex. 123456"
         ></b-form-input>
-
-      <!-- For calender and appointment time
-      <label>Date and Time </label>
-      <b-form-datepicker
-        id="date-blah"
-        v-model="message.date"
-      ></b-form-datepicker>
-
-      <label>Appointment Time </label>
-      <b-form-select
-        v-model="message.priority"
-        :options="appointmentTimes"
-      ></b-form-select> -->
-
-        <b-button v-on:click="publish">Submit Booking</b-button>
+        <b-button v-on:click="publish" class="button">Confirm booking</b-button>
       </form>
     </b-container>
   </div>
