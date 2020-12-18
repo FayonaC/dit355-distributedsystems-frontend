@@ -46,7 +46,6 @@ export default {
         userId: null,
         requestId: null,
         dentistId: null,
-        issuance: null,
         time: ''
       },
       showDismissibleAlert: false,
@@ -76,7 +75,7 @@ export default {
         console.log('Connected')
         client.subscribe('BookingResponse')
         var message = new Paho.Message('Hello')
-        message.destinationName = 'Toodly pipski!'
+        message.destinationName = 'Availability'
         client.send(message)
       }
 
@@ -100,18 +99,35 @@ export default {
       }
     },
     publish() {
-      const booking = {
+      const booking = { // Creates the booking with all the fields
         userid: this.booking.userId,
-        requestid: this.booking.requestId,
+        requestid: null,
         dentistid: this.booking.dentistId,
-        issuance: this.booking.issuance,
+        issuance: Date.now(),
         time: this.booking.time
       }
 
+      if (localStorage.getItem('user') != null) {
+        // Checks if there is a user in the localstorage with this userid, if not create a new user, if yes use the requestid of that user and increment it
+        if (localStorage.getItem('user').userId === this.booking.userId) {
+          console.log('Local storage before incrementing' + localStorage)
+          booking.requestid = localStorage.user.requestId++
+          localStorage.user.requestId = booking.requestid
+          console.log('Printing on line 113 in the if' + localStorage)
+        }
+      } else {
+        console.log('Should have no users saved' + localStorage)
+        const user = { // Creates the user with their id and a requestid
+          userId: this.booking.userId,
+          requestId: 1
+        }
+        console.log('Local storage after a user has been created' + localStorage)
+        booking.requestid = user.requestId
+        localStorage.setItem('user', JSON.stringify(user))
+      }
       var message = new Paho.Message(JSON.stringify(booking))
       message.topic = 'BookingRequest'
       client.publish(message)
-      // this.subscribe()
     }
   }
 }

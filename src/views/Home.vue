@@ -37,7 +37,7 @@ export default {
       id: 'mapbox/streets-v11',
       tileSize: 512,
       zoomOffset: -1,
-      accessToken: 'pk.eyJ1IjoiZGlzdHJpYnN5cyIsImEiOiJja2llZml2aG0xc2dxMnhvNW55bm1hd3U1In0.V731WqpeBOC6a8wwZUwwAA' // Insert access token here
+      accessToken: '' // Insert access token here
     }).addTo(map)
 
     // Create a client instance
@@ -56,7 +56,7 @@ export default {
       console.log('Connected')
       client.subscribe('Dentists')
       var message = new Paho.Message('Hello')
-      message.destinationName = 'Toodly pipski!'
+      message.destinationName = 'Dentist'
       client.send(message)
     }
 
@@ -75,7 +75,7 @@ export default {
         dentists.id = i
         var longitudeMap = (parsing.dentists[i].coordinate.longitude) // Saves the longitude in a variable
         var latitudeMap = (parsing.dentists[i].coordinate.latitude) // Saves the latitude in a variable
-        var marker = L.marker([longitudeMap, latitudeMap]).addTo(map) // Uses the stored coordinates and adds them to the map as markers
+        var marker = L.marker([latitudeMap, longitudeMap]).addTo(map) // Uses the stored coordinates and adds them to the map as markers
         // getting data we need for the popups
         var officeName = (parsing.dentists[i].name)
         var dentistNum = (parsing.dentists[i].dentists)
@@ -92,7 +92,7 @@ export default {
         marker.bindPopup('<b>Dental office:</b> ' + officeName + '<br><b>Address:</b> ' + address + ', <br>' + city +
         '<br><b>Number of dentists:</b> ' + dentistNum + '<br><b>Opening hours:</b> ' + '<br>Monday: ' + monHours +
         '<br>Tuesday: ' + tuesHours + '<br>Wednesday: ' + wedHours + '<br>Thursday: ' + thursHours + '<br>Friday: ' +
-        friHours + '<br><a href="/booking">Book appointment</a>')
+        friHours + '<br><a class="btn btn-primary" href="/booking">Book appointment</a>')
       })
     }
   },
