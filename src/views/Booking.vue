@@ -22,13 +22,23 @@
         </div>
       </div>
       </div>
-      <form>
+      <form @submit.prevent="publish">
+        <label>Enter dentist office ID (for testing only)</label>
+        <b-form-input
+          v-model.number="booking.dentistId"
+          placeholder="Ex. 1"
+        ></b-form-input>
+        <label>Enter appointment date and time (for testing only)</label>
+        <b-form-input
+          v-model.number="booking.time"
+          placeholder="Ex. 2020-01-01 10:00"
+        ></b-form-input>
         <label>Enter your user ID (numbers only)</label>
         <b-form-input
           v-model.number="booking.userId"
           placeholder="Ex. 123456"
         ></b-form-input>
-        <b-button v-on:click="publish" class="button">Confirm booking</b-button>
+        <input type="submit" class="btn-primary btn button" value="Confirm booking"/>
       </form>
     </b-container>
   </div>
@@ -99,32 +109,36 @@ export default {
       }
     },
     publish() {
-      const booking = { // Creates the booking with all the fields
+      var booking = { // Creates the booking with all the fields
         userid: this.booking.userId,
         requestid: null,
         dentistid: this.booking.dentistId,
         issuance: Date.now(),
         time: this.booking.time
       }
-
-      if (localStorage.getItem('user') != null) {
-        // Checks if there is a user in the localstorage with this userid, if not create a new user, if yes use the requestid of that user and increment it
-        if (localStorage.getItem('user').userId === this.booking.userId) {
-          console.log('Local storage before incrementing' + localStorage)
-          booking.requestid = localStorage.user.requestId++
-          localStorage.user.requestId = booking.requestid
-          console.log('Printing on line 113 in the if' + localStorage)
-        }
-      } else {
-        console.log('Should have no users saved' + localStorage)
-        const user = { // Creates the user with their id and a requestid
+      // Checks if there are users saved in the localstorage OR if the user id typed in is not the same as the existing user in the localstorage
+      if (localStorage.getItem('user') == null || JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId) {
+        // Creates the user with their id and a requestid
+        const user = {
           userId: this.booking.userId,
           requestId: 1
         }
-        console.log('Local storage after a user has been created' + localStorage)
         booking.requestid = user.requestId
         localStorage.setItem('user', JSON.stringify(user))
+      } else {
+        // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
+        if (JSON.parse(localStorage.getItem('user')).userId === this.booking.userId) {
+          booking.requestid = JSON.parse(localStorage.getItem('user')).requestId
+          booking.requestid = booking.requestid + 1
+          // Creates the user with their id and a requestid
+          const user = {
+            userId: this.booking.userId,
+            requestId: booking.requestid
+          }
+          localStorage.setItem('user', JSON.stringify(user))
+        }
       }
+      console.log('Booking ' + JSON.stringify(booking))
       var message = new Paho.Message(JSON.stringify(booking))
       message.topic = 'BookingRequest'
       client.publish(message)
