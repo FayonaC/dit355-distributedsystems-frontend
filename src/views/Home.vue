@@ -5,12 +5,13 @@
         <div class="col-3">
           <div class="calendar">
             <label>Pick a date to see available dentists</label>
-            <b-form-datepicker id="date" v-model="date"></b-form-datepicker>
+            <b-form-datepicker id="date" v-model="availabilityRequest.date"></b-form-datepicker>
+            <b-button v-on:click="publish">Request date</b-button>
           </div>
         </div>
-      <div class="col-9">
-        <div id="map"></div>
-      </div>
+        <div class="col-9">
+          <div id="map"></div>
+        </div>
       </div>
     </b-container>
   </div>
@@ -20,11 +21,15 @@
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
 import L from 'leaflet'
 
+var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
+
 export default {
   name: 'home',
   data() {
     return {
-      date: null,
+      availabilityRequest: {
+        date: null
+      },
       message: 'none'
     }
   },
@@ -40,9 +45,6 @@ export default {
       accessToken: 'pk.eyJ1IjoiZGlzdHJpYnN5cyIsImEiOiJja2llZml2aG0xc2dxMnhvNW55bm1hd3U1In0.V731WqpeBOC6a8wwZUwwAA' // Insert access token here
     }).addTo(map)
 
-    // Create a client instance
-    var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
-
     // set callback handlers
     client.onConnectionLost = onConnectionLost
     client.onMessageArrived = onMessageArrived
@@ -52,12 +54,17 @@ export default {
 
     // called when the client connects
     function onConnect() {
-      // Once a connection has been made, make a subscription and send a message.
+      // Once a connection has been made, make a subscription to a topic and send a message.
       console.log('Connected')
       client.subscribe('Dentists')
-      var message = new Paho.Message('Hello')
+      var message = new Paho.Message('Hello from dentists')
       message.destinationName = 'Dentist'
       client.send(message)
+
+    /* client.subscribe('free-slots') // This might need to change
+      var messageTwo = new Paho.Message('Hello from availability')
+      messageTwo.destinationName = 'Availability'
+      client.send(messageTwo) */
     }
 
     // called when the client loses its connection
@@ -98,33 +105,14 @@ export default {
   },
   methods: {
     publish() {
-      var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
-
-      // set callback handlers
-      client.onConnectionLost = onConnectionLost
-      client.onMessageArrived = onMessageArrived
-
-      // connect the client
-      client.connect({ onSuccess: onConnect })
-
-      // called when the client connects
-      function onConnect() {
-        var message = new Paho.Message('Greetings')
-        message.topic = 'test'
-        client.publish(message)
+      // Creates an availability request
+      var availabilityRequest = {
+        date: this.availabilityRequest.date
       }
-
-      // called when the client loses its connection
-      function onConnectionLost(responseObject) {
-        if (responseObject.errorCode !== 0) {
-          console.log('onConnectionLost:' + responseObject.errorMessage)
-        }
-      }
-
-      // called when a message arrives
-      function onMessageArrived(message) {
-        console.log('onMessageArrived:' + message.payloadString)
-      }
+      console.log(JSON.stringify(availabilityRequest))
+      var message = new Paho.Message(JSON.stringify(availabilityRequest))
+      message.topic = 'AvailabilityRequest'
+      client.publish(message)
     }
   }
 }
