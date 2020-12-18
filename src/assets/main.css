@@ -31,3 +31,26 @@ footer {
 .calendar {
     margin-top: 20vh;
 }
+
+.button-times {
+    margin-left: 18vw;
+    margin-top: 5vh;
+}
+
+form {
+    margin-top: 20vh;
+}
+
+.button {
+    margin-top: 2vh;
+}
+
+h1 {
+    text-align: center;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+h3 {
+    text-align: center;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}

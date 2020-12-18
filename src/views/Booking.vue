@@ -1,58 +1,44 @@
 <template>
   <div>
-    <h1>Appointment Booking Form</h1>
     <b-container>
+      <h1>Office Name</h1>
+      <h3>Available appointments:</h3>
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
       </b-alert>
       <b-alert v-model="showDismissibleSuccess" variant="success" dismissible>
         {{ msg }}
       </b-alert>
-      <form>
-        <label>User ID </label>
-        <b-form-input type="number"
-          v-model.number="booking.userId"
-          placeholder="Enter your user ID"
-        ></b-form-input>
-
-        <label>Request ID </label>
-        <b-form-input type="number"
-          v-model.number="booking.requestId"
-          placeholder="Enter your request ID"
-        ></b-form-input>
-
-        <label>Dentist ID </label>
-        <b-form-input type="number"
-          v-model.number="booking.dentistId"
-          placeholder="Enter your dentist ID"
-        ></b-form-input>
-
-        <label>Issuance Number </label>
-        <b-form-input type="number"
-          v-model.number="booking.issuance"
-          placeholder="Enter your issuance number"
-        ></b-form-input>
-
-        <label>Date and Time</label>
+      <div class="button-times">
+        <div class="row">
+        <div class="col-3">
+          <b-button pill>07:00-07:30</b-button>
+        </div>
+        <div class="col-3">
+          <b-button pill>07:30-08:00</b-button>
+        </div>
+        <div class="col-3">
+          <b-button pill>08:00-08:30</b-button>
+        </div>
+      </div>
+      </div>
+      <form @submit.prevent="publish">
+        <label>Enter dentist office ID (for testing only)</label>
         <b-form-input
-          v-model="booking.time"
-          placeholder="Enter your appointment date and time"
+          v-model.number="booking.dentistId"
+          placeholder="Ex. 1"
         ></b-form-input>
-
-      <!-- For calender and appointment time
-      <label>Date and Time </label>
-      <b-form-datepicker
-        id="date-blah"
-        v-model="message.date"
-      ></b-form-datepicker>
-
-      <label>Appointment Time </label>
-      <b-form-select
-        v-model="message.priority"
-        :options="appointmentTimes"
-      ></b-form-select> -->
-
-        <b-button v-on:click="publish">Submit Booking</b-button>
+        <label>Enter appointment date and time (for testing only)</label>
+        <b-form-input
+          v-model.number="booking.time"
+          placeholder="Ex. 2020-01-01 10:00"
+        ></b-form-input>
+        <label>Enter your user ID (numbers only)</label>
+        <b-form-input
+          v-model.number="booking.userId"
+          placeholder="Ex. 123456"
+        ></b-form-input>
+        <input type="submit" class="btn-primary btn button" value="Confirm booking"/>
       </form>
     </b-container>
   </div>
@@ -70,7 +56,6 @@ export default {
         userId: null,
         requestId: null,
         dentistId: null,
-        issuance: null,
         time: ''
       },
       showDismissibleAlert: false,
@@ -100,7 +85,7 @@ export default {
         console.log('Connected')
         client.subscribe('BookingResponse')
         var message = new Paho.Message('Hello')
-        message.destinationName = 'Toodly pipski!'
+        message.destinationName = 'Availability'
         client.send(message)
       }
 
@@ -124,18 +109,39 @@ export default {
       }
     },
     publish() {
-      const booking = {
+      var booking = { // Creates the booking with all the fields
         userid: this.booking.userId,
-        requestid: this.booking.requestId,
+        requestid: null,
         dentistid: this.booking.dentistId,
-        issuance: this.booking.issuance,
+        issuance: Date.now(),
         time: this.booking.time
       }
-
+      // Checks if there are users saved in the localstorage OR if the user id typed in is not the same as the existing user in the localstorage
+      if (localStorage.getItem('user') == null || JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId) {
+        // Creates the user with their id and a requestid
+        const user = {
+          userId: this.booking.userId,
+          requestId: 1
+        }
+        booking.requestid = user.requestId
+        localStorage.setItem('user', JSON.stringify(user))
+      } else {
+        // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
+        if (JSON.parse(localStorage.getItem('user')).userId === this.booking.userId) {
+          booking.requestid = JSON.parse(localStorage.getItem('user')).requestId
+          booking.requestid = booking.requestid + 1
+          // Creates the user with their id and a requestid
+          const user = {
+            userId: this.booking.userId,
+            requestId: booking.requestid
+          }
+          localStorage.setItem('user', JSON.stringify(user))
+        }
+      }
+      console.log('Booking ' + JSON.stringify(booking))
       var message = new Paho.Message(JSON.stringify(booking))
       message.topic = 'BookingRequest'
       client.publish(message)
-      // this.subscribe()
     }
   }
 }

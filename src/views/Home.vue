@@ -56,7 +56,7 @@ export default {
       console.log('Connected')
       client.subscribe('Dentists')
       var message = new Paho.Message('Hello')
-      message.destinationName = 'Toodly pipski!'
+      message.destinationName = 'Dentist'
       client.send(message)
     }
 
@@ -92,7 +92,7 @@ export default {
         marker.bindPopup('<b>Dental office:</b> ' + officeName + '<br><b>Address:</b> ' + address + ', <br>' + city +
         '<br><b>Number of dentists:</b> ' + dentistNum + '<br><b>Opening hours:</b> ' + '<br>Monday: ' + monHours +
         '<br>Tuesday: ' + tuesHours + '<br>Wednesday: ' + wedHours + '<br>Thursday: ' + thursHours + '<br>Friday: ' +
-        friHours)
+        friHours + '<br><a class="btn btn-primary" href="/booking">Book appointment</a>')
       })
     }
   },
