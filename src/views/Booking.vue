@@ -77,7 +77,7 @@ export default {
       client.onMessageArrived = this.onMessageArrived
 
       // connect the client
-      client.connect({ onSuccess: onConnect })
+      client.connect({ onSuccess: onConnect, qos: 1 })
 
       // called when the client connects
       function onConnect() {
@@ -141,7 +141,7 @@ export default {
       console.log('Booking ' + JSON.stringify(booking))
       var message = new Paho.Message(JSON.stringify(booking))
       message.topic = 'BookingRequest'
-      client.publish(message)
+      client.publish({ message, qos: 1 })
     }
   }
 }
