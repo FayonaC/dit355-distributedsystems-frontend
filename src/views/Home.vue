@@ -56,9 +56,13 @@ export default {
     function onConnect() {
       // Once a connection has been made, make a subscription to a topic and send a message.
       console.log('Connected')
-      client.subscribe('Dentists')
+      var subOptions = {
+        qos: 1
+      }
+      client.subscribe('Dentists', subOptions)
       var message = new Paho.Message('Hello from dentists')
       message.destinationName = 'Dentist'
+      message.qos = 1
       client.send(message)
 
     /* client.subscribe('free-slots') // This might need to change
@@ -112,6 +116,7 @@ export default {
       console.log(JSON.stringify(availabilityRequest))
       var message = new Paho.Message(JSON.stringify(availabilityRequest))
       message.topic = 'AvailabilityRequest'
+      message.qos = 1
       client.publish(message)
     }
   }

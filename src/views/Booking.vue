@@ -83,9 +83,13 @@ export default {
       function onConnect() {
         // Once a connection has been made, make a subscription and send a message.
         console.log('Connected')
-        client.subscribe('BookingResponse')
+        var subOptions = {
+          qos: 1
+        }
+        client.subscribe('BookingResponse', subOptions)
         var message = new Paho.Message('Hello')
         message.destinationName = 'Availability'
+        message.qos = 1
         client.send(message)
       }
 
@@ -141,6 +145,7 @@ export default {
       console.log('Booking ' + JSON.stringify(booking))
       var message = new Paho.Message(JSON.stringify(booking))
       message.topic = 'BookingRequest'
+      message.qos = 1
       client.publish(message)
     }
   }
