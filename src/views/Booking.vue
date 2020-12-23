@@ -73,7 +73,7 @@ export default {
 
     subscribe() {
       // set callback handlers
-      client.onConnectionLost = onConnectionLost
+      client.onConnectionLost = this.onConnectionLost
       client.onMessageArrived = this.onMessageArrived
 
       // connect the client
@@ -92,12 +92,13 @@ export default {
         message.qos = 1
         client.send(message)
       }
-
-      // called when the client loses its connection
-      function onConnectionLost(responseObject) {
-        if (responseObject.errorCode !== 0) {
-          console.log('onConnectionLost:' + responseObject.errorMessage)
-        }
+    },
+    // called when the client loses its connection
+    onConnectionLost(responseObject) {
+      if (responseObject.errorCode !== 0) {
+        this.availabilityRequest = 'Connection Lost! Try refreshing...'
+        this.showDismissibleAlert = true
+        console.log('onConnectionLost:' + responseObject.errorMessage)
       }
     },
     // called when a message arrives
