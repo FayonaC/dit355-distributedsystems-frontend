@@ -96,6 +96,7 @@ export default {
     // called when the client loses its connection
     onConnectionLost(responseObject) {
       if (responseObject.errorCode !== 0) {
+        client.unsubscribe('BookingResponse')
         this.availabilityRequest = 'Connection Lost! Try refreshing...'
         this.showDismissibleAlert = true
         console.log('onConnectionLost:' + responseObject.errorMessage)
