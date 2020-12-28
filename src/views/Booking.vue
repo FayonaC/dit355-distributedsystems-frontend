@@ -106,13 +106,13 @@ export default {
     // called when a message arrives
     onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
-      if (JSON.parse(message.payloadString).requestid === this.booking.requestId) {
-        console.log(JSON.parse(message.payloadString).requestid)
-        this.msg = 'Booking Response Successful!'
-        this.showDismissibleSuccess = true
-      } else {
-        this.msg = 'None!'
+      if (JSON.parse(message.payloadString).time === 'none') {
+        this.msg = 'Sorry, appointment not available.'
         this.showDismissibleAlert = true
+      } else {
+        console.log(JSON.parse(message.payloadString).requestid)
+        this.msg = 'Booking confirmed!'
+        this.showDismissibleSuccess = true
       }
     },
     publish() {
