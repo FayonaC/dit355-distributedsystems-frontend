@@ -46,7 +46,7 @@
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
-var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
+var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend', true)
 
 export default {
   name: 'booking',
@@ -96,10 +96,11 @@ export default {
     // called when the client loses its connection
     onConnectionLost(responseObject) {
       if (responseObject.errorCode !== 0) {
-        client.unsubscribe('BookingResponse')
         this.availabilityRequest = 'Connection Lost! Try refreshing...'
         this.showDismissibleAlert = true
         console.log('onConnectionLost:' + responseObject.errorMessage)
+        client.unsubscribe('BookingResponse')
+        client.disconnect()
       }
     },
     // called when a message arrives

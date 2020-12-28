@@ -89,10 +89,11 @@ export default {
     },
     onConnectionLost(responseObject) {
       if (responseObject.errorCode !== 0) {
-        client.unsubscribe('Dentists', 'free-slots')
         this.availabilityRequest = 'Connection Lost! Try refreshing...'
         this.showDismissibleAlert = true
         console.log('onConnectionLost:' + responseObject.errorMessage)
+        client.unsubscribe('Dentists', 'free-slots')
+        client.disconnect()
       }
     },
     publish() {
