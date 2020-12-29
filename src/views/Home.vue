@@ -14,17 +14,22 @@
         </div>
       </div>
     </b-container>
+    <Booking :availabilityRequest="availabilityRequest.date"/>
   </div>
 </template>
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
 import L from 'leaflet'
+import Booking from '../views/Booking.vue'
 
 var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
 
 export default {
   name: 'home',
+  components: {
+    Booking
+  },
   data() {
     return {
       availabilityRequest: {

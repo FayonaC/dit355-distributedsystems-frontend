@@ -2,10 +2,9 @@
   <div>
     <b-container>
       <h1>Office Name</h1>
-      {{dentists}}
+      {{officeRequest}}
       <h3>Available appointments:</h3>
-            {{ officeRequest }}
-
+        {{availabilityRequest}}
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
       </b-alert>
@@ -53,6 +52,7 @@ var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
 
 export default {
   name: 'booking',
+  props: ['availabilityRequest', 'officeRequest'],
   data() {
     return {
       booking: {
@@ -60,9 +60,6 @@ export default {
         requestId: null,
         dentistId: null,
         time: ''
-      },
-      officeRequest: {
-        name: ''
       },
       showDismissibleAlert: false,
       showDismissibleSuccess: false,
@@ -106,11 +103,11 @@ export default {
         messageTwo.qos = 1
         client.send(messageTwo)
 
-        /* client.subscribe('Dentists', subOptions)
+        client.subscribe('Dentists', subOptions)
         var messageThree = new Paho.Message('Hello from dentists')
         messageThree.destinationName = 'Dentist'
         messageThree.qos = 1
-        client.send(messageThree) */
+        client.send(messageThree)
 
         client.subscribe('OfficeInfo')
         var messageFour = new Paho.Message('Hello from availability')
