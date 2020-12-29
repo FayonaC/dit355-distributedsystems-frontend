@@ -6,7 +6,7 @@
           <div class="calendar">
             <label>Pick a date to see available dentists</label>
             <b-form-datepicker id="date" v-model="availabilityRequest.date"></b-form-datepicker>
-            <b-button v-on:click="publish">Request date</b-button>
+            <b-button v-on:click="publishAvailabilityRequest">Request date</b-button>
           </div>
         </div>
         <div class="col-9">
@@ -29,6 +29,9 @@ export default {
     return {
       availabilityRequest: {
         date: null
+      },
+      officeRequest: {
+        name: ''
       },
       message: 'none',
       dentists: [],
@@ -90,7 +93,7 @@ export default {
         }
       }
     },
-    publish() {
+    publishAvailabilityRequest() {
       // Creates an availability request
       var availabilityRequest = {
         date: this.availabilityRequest.date
@@ -98,6 +101,16 @@ export default {
       console.log(JSON.stringify(availabilityRequest))
       var message = new Paho.Message(JSON.stringify(availabilityRequest))
       message.topic = 'AvailabilityRequest'
+      message.qos = 1
+      client.publish(message)
+    },
+    publishOfficeRequest() {
+      var officeRequest = {
+        name: this.officeRequest.name
+      }
+      console.log(JSON.stringify(officeRequest))
+      var message = new Paho.Message(JSON.stringify(officeRequest))
+      message.topic = 'OfficeRequest'
       message.qos = 1
       client.publish(message)
     },
@@ -132,6 +145,7 @@ export default {
       })
     },
     createMarkers(map) {
+      // Creates a dental office request
       var unavailable = this.unavailable
       this.layerGroup.clearLayers()
       var layerGroup = this.layerGroup
@@ -172,10 +186,9 @@ export default {
         '<br>Tuesday: ' + tuesHours + '<br>Wednesday: ' + wedHours + '<br>Thursday: ' + thursHours + '<br>Friday: ' +
         friHours + getButton(available))
       })
-
       function getButton(available) {
         if (available) {
-          return '<br><a class="btn btn-primary" href="/booking">Book appointment</a>'
+          return '<br><a class="btn btn-primary"  href="/booking">Book appointment</a>'
         } else {
           return '<br><a class="btn btn-primary disabled" href="/booking">Book appointment</a>'
         }

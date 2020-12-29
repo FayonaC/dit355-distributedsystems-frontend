@@ -4,6 +4,8 @@
       <h1>Office Name</h1>
       {{dentists}}
       <h3>Available appointments:</h3>
+            {{ officeRequest }}
+
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
       </b-alert>
@@ -59,6 +61,9 @@ export default {
         dentistId: null,
         time: ''
       },
+      officeRequest: {
+        name: ''
+      },
       showDismissibleAlert: false,
       showDismissibleSuccess: false,
       msg: '',
@@ -101,11 +106,17 @@ export default {
         messageTwo.qos = 1
         client.send(messageTwo)
 
-        client.subscribe('Dentists', subOptions)
+        /* client.subscribe('Dentists', subOptions)
         var messageThree = new Paho.Message('Hello from dentists')
         messageThree.destinationName = 'Dentist'
         messageThree.qos = 1
-        client.send(messageThree)
+        client.send(messageThree) */
+
+        client.subscribe('OfficeInfo')
+        var messageFour = new Paho.Message('Hello from availability')
+        messageFour.destinationName = 'Availability'
+        messageFour.qos = 1
+        client.send(messageFour)
       }
 
       // called when the client loses its connection
@@ -119,8 +130,9 @@ export default {
     onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
       this.populateDentistArray(message)
+      console.log(JSON.parse(message.payloadString).requestid)
+
       if (JSON.parse(message.payloadString).requestid === this.booking.requestId) {
-        console.log(JSON.parse(message.payloadString).requestid)
         this.msg = 'Booking Response Successful!'
         this.showDismissibleSuccess = true
       } else {
