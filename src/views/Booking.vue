@@ -30,7 +30,7 @@
         ></b-form-input>
         <label>Enter appointment date and time (for testing only)</label>
         <b-form-input
-          v-model.number="booking.time"
+          v-model="booking.time"
           placeholder="Ex. 2020-01-01 10:00"
         ></b-form-input>
         <label>Enter your user ID (numbers only)</label>
