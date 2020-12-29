@@ -2,6 +2,7 @@
   <div>
     <b-container>
       <h1>Office Name</h1>
+      {{dentists}}
       <h3>Available appointments:</h3>
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
@@ -60,7 +61,9 @@ export default {
       },
       showDismissibleAlert: false,
       showDismissibleSuccess: false,
-      msg: ''
+      msg: '',
+      dentists: [],
+      schedules: []
 
     }
   },
@@ -91,6 +94,18 @@ export default {
         message.destinationName = 'Availability'
         message.qos = 1
         client.send(message)
+
+        client.subscribe('free-slots')
+        var messageTwo = new Paho.Message('Hello from availability')
+        messageTwo.destinationName = 'Availability'
+        messageTwo.qos = 1
+        client.send(messageTwo)
+
+        client.subscribe('Dentists', subOptions)
+        var messageThree = new Paho.Message('Hello from dentists')
+        messageThree.destinationName = 'Dentist'
+        messageThree.qos = 1
+        client.send(messageThree)
       }
 
       // called when the client loses its connection
@@ -103,6 +118,7 @@ export default {
     // called when a message arrives
     onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
+      this.populateDentistArray(message)
       if (JSON.parse(message.payloadString).requestid === this.booking.requestId) {
         console.log(JSON.parse(message.payloadString).requestid)
         this.msg = 'Booking Response Successful!'
@@ -147,7 +163,18 @@ export default {
       message.topic = 'BookingRequest'
       message.qos = 1
       client.publish(message)
+    },
+    populateDentistArray(message) {
+      var dentists = JSON.parse(message.payloadString).dentists
+      var dentistsNew = []
+      var officeName = ''
+      for (var i = 0; i < dentists.length; i++) {
+        officeName = dentists[i].name
+        dentistsNew.push(officeName)
+      }
+      this.dentists = dentistsNew
     }
+
   }
 }
 </script>

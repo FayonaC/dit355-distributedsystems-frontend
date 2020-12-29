@@ -106,6 +106,7 @@ export default {
         this.getDentists(message, this.map)
       } else if (JSON.parse(message.payloadString).schedules) {
         this.availability(message, this.map)
+        console.log(this.schedules)
       }
     },
     availability(message, map) {
