@@ -13,6 +13,9 @@
           <div id="map"></div>
         </div>
       </div>
+                      <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
+        {{ msg }}
+      </b-alert>
     </b-container>
   </div>
 </template>
@@ -35,7 +38,9 @@ export default {
       schedules: [],
       map: {},
       unavailable: [],
-      layerGroup: {}
+      layerGroup: {},
+      showDismissibleAlert: false,
+      msg: ''
     }
   },
   mounted() {
@@ -57,9 +62,8 @@ export default {
   methods: {
     subscribe() {
       // set callback handlers
-      client.onConnectionLost = onConnectionLost
+      client.onConnectionLost = this.onConnectionLost
       client.onMessageArrived = this.onMessageArrived
-
       // connect the client
       client.connect({ onSuccess: onConnect })
 
@@ -82,12 +86,14 @@ export default {
         messageTwo.destinationName = 'Availability'
         client.send(messageTwo)
       }
-
-      // called when the client loses its connection
-      function onConnectionLost(responseObject) {
-        if (responseObject.errorCode !== 0) {
-          console.log('onConnectionLost:' + responseObject.errorMessage)
-        }
+    },
+    onConnectionLost(responseObject) {
+      if (responseObject.errorCode !== 0) {
+        this.availabilityRequest = 'Connection Lost! Try refreshing...'
+        this.showDismissibleAlert = true
+        console.log('onConnectionLost:' + responseObject.errorMessage)
+        client.unsubscribe('Dentists', 'free-slots')
+        client.disconnect()
       }
     },
     publish() {

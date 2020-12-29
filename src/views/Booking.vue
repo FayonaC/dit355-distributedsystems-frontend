@@ -46,7 +46,7 @@
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
-var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
+var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend', true)
 
 export default {
   name: 'booking',
@@ -73,7 +73,7 @@ export default {
 
     subscribe() {
       // set callback handlers
-      client.onConnectionLost = onConnectionLost
+      client.onConnectionLost = this.onConnectionLost
       client.onMessageArrived = this.onMessageArrived
 
       // connect the client
@@ -92,24 +92,27 @@ export default {
         message.qos = 1
         client.send(message)
       }
-
-      // called when the client loses its connection
-      function onConnectionLost(responseObject) {
-        if (responseObject.errorCode !== 0) {
-          console.log('onConnectionLost:' + responseObject.errorMessage)
-        }
+    },
+    // called when the client loses its connection
+    onConnectionLost(responseObject) {
+      if (responseObject.errorCode !== 0) {
+        this.availabilityRequest = 'Connection Lost! Try refreshing...'
+        this.showDismissibleAlert = true
+        console.log('onConnectionLost:' + responseObject.errorMessage)
+        client.unsubscribe('BookingResponse')
+        client.disconnect()
       }
     },
     // called when a message arrives
     onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
-      if (JSON.parse(message.payloadString).requestid === this.booking.requestId) {
-        console.log(JSON.parse(message.payloadString).requestid)
-        this.msg = 'Booking Response Successful!'
-        this.showDismissibleSuccess = true
-      } else {
-        this.msg = 'None!'
+      if (JSON.parse(message.payloadString).time === 'none') {
+        this.msg = 'Sorry, appointment not available.'
         this.showDismissibleAlert = true
+      } else {
+        console.log(JSON.parse(message.payloadString).requestid)
+        this.msg = 'Booking confirmed!'
+        this.showDismissibleSuccess = true
       }
     },
     publish() {
