@@ -16,10 +16,10 @@
                 :key="dentist.id" :value="dentist.id">{{ dentist.name }}</option>
           </select>
           </div>
-            <b-button v-on:click="displayOfficeRequest">Request office availability</b-button>
-            <select class="form-control" id="schedule" v-model="timeSlots.date">
+            <b-button v-on:click="displayOfficeTimeSlots">Request office availability</b-button>
+            <select class="form-control" id="schedule" v-model="timeSlots.startTime">
               <option v-for="schedule in schedules"
-                :key="schedule.id">{{ schedule.dentist }}</option>
+                :key="schedule.id">{{ timeSlots.startTime }}</option>
           </select>
         </div>
 
@@ -58,7 +58,8 @@ export default {
         id: null
       },
       timeSlots: {
-        date: ''
+        startTime: '',
+        endTime: ''
       },
       message: 'none',
       dentists: [],
@@ -131,14 +132,26 @@ export default {
       message.qos = 1
       client.publish(message)
     },
-    displayOfficeRequest() {
-      console.log('HELLO')
-      if (this.schedules.dentist === this.dentist.id) {
-        console.log('BYE')
 
-        console.log(this.dentist.id)
+    displayOfficeTimeSlots() {
+      // var schedule = []
+      var timeSlots = []
+
+      console.log((this.schedules[0].timeSlots) + 'helll')
+
+      for (var i = 0; i < this.schedules.length; i++) {
+        if (this.schedules[i].dentist === this.dentist.id) {
+          // schedule.push(this.schedules[i])
+
+          timeSlots.push(this.schedules[i].timeSlots)
+
+          // for (var j = 0; j < schedule.length; j++) {
+          //   timeSlots.push(schedule[j].timeSlots)
+          // }
+        }
       }
-      console.log('TEST')
+      this.timeSlots = timeSlots
+      console.log(timeSlots)
     },
     onMessageArrived(message) {
       if (JSON.parse(message.payloadString).dentists) {
