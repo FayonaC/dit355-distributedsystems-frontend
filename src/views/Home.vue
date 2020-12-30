@@ -38,6 +38,7 @@
                 {{ appointment.startTime }}
               </option>
             </select>
+            <label for="categories">To see available appointments click above ^</label>
           </div>
         </div>
         <div class="col-9">
