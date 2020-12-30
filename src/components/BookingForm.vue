@@ -3,7 +3,7 @@
     <b-container>
       <h1>Book Your Appointment</h1>
       <h3>Available appointments:</h3>
-        {{availabilityRequest}}
+      {{ availabilityRequest }}
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
       </b-alert>
@@ -12,16 +12,16 @@
       </b-alert>
       <div class="button-times">
         <div class="row">
-        <div class="col-3">
-          <b-button pill>07:00-07:30</b-button>
+          <div class="col-3">
+            <b-button pill>07:00-07:30</b-button>
+          </div>
+          <div class="col-3">
+            <b-button pill>07:30-08:00</b-button>
+          </div>
+          <div class="col-3">
+            <b-button pill>08:00-08:30</b-button>
+          </div>
         </div>
-        <div class="col-3">
-          <b-button pill>07:30-08:00</b-button>
-        </div>
-        <div class="col-3">
-          <b-button pill>08:00-08:30</b-button>
-        </div>
-      </div>
       </div>
       <form @submit.prevent="publish">
         <label>Enter dentist office ID (for testing only)</label>
@@ -39,7 +39,11 @@
           v-model.number="booking.userId"
           placeholder="Ex. 123456"
         ></b-form-input>
-        <input type="submit" class="btn-primary btn button" value="Confirm booking"/>
+        <input
+          type="submit"
+          class="btn-primary btn button"
+          value="Confirm booking"
+        />
       </form>
     </b-container>
   </div>
@@ -65,7 +69,6 @@ export default {
       msg: '',
       dentists: [],
       schedules: []
-
     }
   },
 
@@ -74,7 +77,6 @@ export default {
     this.subscribe()
   },
   methods: {
-
     subscribe() {
       // set callback handlers
       client.onConnectionLost = onConnectionLost
@@ -128,7 +130,9 @@ export default {
       this.populateDentistArray(message)
       console.log(JSON.parse(message.payloadString).requestid)
 
-      if (JSON.parse(message.payloadString).requestid === this.booking.requestId) {
+      if (
+        JSON.parse(message.payloadString).requestid === this.booking.requestId
+      ) {
         this.msg = 'Booking Response Successful!'
         this.showDismissibleSuccess = true
       } else {
@@ -137,7 +141,8 @@ export default {
       }
     },
     publish() {
-      var booking = { // Creates the booking with all the fields
+      var booking = {
+        // Creates the booking with all the fields
         userid: this.booking.userId,
         requestid: null,
         dentistid: this.booking.dentistId,
@@ -145,7 +150,10 @@ export default {
         time: this.booking.time
       }
       // Checks if there are users saved in the localstorage OR if the user id typed in is not the same as the existing user in the localstorage
-      if (localStorage.getItem('user') == null || JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId) {
+      if (
+        localStorage.getItem('user') == null ||
+        JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId
+      ) {
         // Creates the user with their id and a requestid
         const user = {
           userId: this.booking.userId,
@@ -155,8 +163,13 @@ export default {
         localStorage.setItem('user', JSON.stringify(user))
       } else {
         // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
-        if (JSON.parse(localStorage.getItem('user')).userId === this.booking.userId) {
-          booking.requestid = JSON.parse(localStorage.getItem('user')).requestId
+        if (
+          JSON.parse(localStorage.getItem('user')).userId ===
+          this.booking.userId
+        ) {
+          booking.requestid = JSON.parse(
+            localStorage.getItem('user')
+          ).requestId
           booking.requestid = booking.requestid + 1
           // Creates the user with their id and a requestid
           const user = {
@@ -182,7 +195,6 @@ export default {
       }
       this.dentists = dentistsNew
     }
-
   }
 }
 </script>

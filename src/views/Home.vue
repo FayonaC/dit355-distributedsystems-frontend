@@ -5,34 +5,50 @@
         <div class="col-3">
           <div class="calendar">
             <label>Pick a date to see available dentists</label>
-            <b-form-datepicker id="date" v-model="availabilityRequest.date"></b-form-datepicker>
-            <b-button v-on:click="publishAvailabilityRequest">Request date</b-button>
+            <b-form-datepicker
+              id="date"
+              v-model="availabilityRequest.date"
+            ></b-form-datepicker>
+            <b-button v-on:click="publishAvailabilityRequest"
+              >Request date</b-button
+            >
           </div>
           <div>
-          <label for="categories">Office Names:</label>
-          <div class="col-8">
-            <select class="form-control" id="name" v-model="dentist.id">
-              <option v-for="dentist in dentists"
-                :key="dentist.id" :value="dentist.id">{{ dentist.name }}</option>
-          </select>
+            <label for="categories">Office Names:</label>
+            <div class="col-8">
+              <select class="form-control" id="name" v-model="dentist.id">
+                <option
+                  v-for="dentist in dentists"
+                  :key="dentist.id"
+                  :value="dentist.id"
+                >
+                  {{ dentist.name }}
+                </option>
+              </select>
+            </div>
+            <b-button v-on:click="displayOfficeTimeSlots"
+              >Request office availability</b-button
+            >
+            <select
+              class="form-control"
+              id="startTime"
+              v-model="appointment.startTime"
+            >
+              <option v-for="appointment in appointments" :key="appointment.id">
+                {{ appointment.startTime }}
+              </option>
+            </select>
           </div>
-            <b-button v-on:click="displayOfficeTimeSlots">Request office availability</b-button>
-            <select class="form-control" id="schedule" v-model="timeSlots.startTime">
-              <option v-for="schedule in schedules"
-                :key="schedule.id">{{ timeSlots.startTime }}</option>
-          </select>
-        </div>
-
         </div>
         <div class="col-9">
           <b-container fluid>
-          <div id="map"></div>
+            <div id="map"></div>
           </b-container>
         </div>
       </div>
     </b-container>
     <b-container fluid>
-    <BookingForm :availabilityRequest="availabilityRequest.date"/>
+      <BookingForm :availabilityRequest="availabilityRequest.date" />
     </b-container>
   </div>
 </template>
@@ -57,10 +73,11 @@ export default {
       dentist: {
         id: null
       },
-      timeSlots: {
+      appointment: {
         startTime: '',
         endTime: ''
       },
+      appointments: [],
       message: 'none',
       dentists: [],
       schedules: [],
@@ -72,16 +89,21 @@ export default {
   mounted() {
     this.subscribe()
 
-    this.map = L.map('map').setView([57.708870, 11.974560], 12)
+    this.map = L.map('map').setView([57.70887, 11.97456], 12)
 
-    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-      maxZoom: 18,
-      id: 'mapbox/streets-v11',
-      tileSize: 512,
-      zoomOffset: -1,
-      accessToken: 'pk.eyJ1IjoiZGlzdHJpYnN5cyIsImEiOiJja2llZml2aG0xc2dxMnhvNW55bm1hd3U1In0.V731WqpeBOC6a8wwZUwwAA' // Insert access token here
-    }).addTo(this.map)
+    L.tileLayer(
+      'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
+      {
+        attribution:
+          'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken:
+          'pk.eyJ1IjoiZGlzdHJpYnN5cyIsImEiOiJja2llZml2aG0xc2dxMnhvNW55bm1hd3U1In0.V731WqpeBOC6a8wwZUwwAA' // Insert access token here
+      }
+    ).addTo(this.map)
 
     this.layerGroup = L.layerGroup().addTo(this.map)
   },
@@ -132,26 +154,21 @@ export default {
       message.qos = 1
       client.publish(message)
     },
-
     displayOfficeTimeSlots() {
-      // var schedule = []
-      var timeSlots = []
-
-      console.log((this.schedules[0].timeSlots) + 'helll')
+      // Creates the times slots for a selected dental office
+      var dentistOffice = null
+      var appointments = []
 
       for (var i = 0; i < this.schedules.length; i++) {
         if (this.schedules[i].dentist === this.dentist.id) {
-          // schedule.push(this.schedules[i])
+          dentistOffice = this.schedules[i]
 
-          timeSlots.push(this.schedules[i].timeSlots)
-
-          // for (var j = 0; j < schedule.length; j++) {
-          //   timeSlots.push(schedule[j].timeSlots)
-          // }
+          for (var j = 0; j < dentistOffice.timeSlots.length; j++) {
+            appointments.push(dentistOffice.timeSlots[j])
+          }
         }
       }
-      this.timeSlots = timeSlots
-      console.log(timeSlots)
+      this.appointments = appointments
     },
     onMessageArrived(message) {
       if (JSON.parse(message.payloadString).dentists) {
@@ -188,39 +205,63 @@ export default {
       var unavailable = this.unavailable
       this.layerGroup.clearLayers()
       var layerGroup = this.layerGroup
-      this.dentists.forEach(function (dentists, i) { // Iterates through all the dentists in the JSON
-        var longitudeMap = (dentists.coordinate.longitude) // Saves the longitude in a variable
-        var latitudeMap = (dentists.coordinate.latitude) // Saves the latitude in a variable
+      this.dentists.forEach(function (dentists, i) {
+        // Iterates through all the dentists in the JSON
+        var longitudeMap = dentists.coordinate.longitude // Saves the longitude in a variable
+        var latitudeMap = dentists.coordinate.latitude // Saves the latitude in a variable
         var marker = {}
         // Match dentist to dentist id in availability and set opacity based on that
         if (unavailable.length > 0) {
           unavailable.forEach(function (un, i) {
             if (un.dentist === dentists.id) {
-              marker = L.marker([latitudeMap, longitudeMap]).setOpacity(0.5).addTo(layerGroup)
+              marker = L.marker([latitudeMap, longitudeMap])
+                .setOpacity(0.5)
+                .addTo(layerGroup)
             } else {
-              marker = L.marker([latitudeMap, longitudeMap]).setOpacity(1).addTo(layerGroup) // Uses the stored coordinates and adds them to the map as markers
+              marker = L.marker([latitudeMap, longitudeMap])
+                .setOpacity(1)
+                .addTo(layerGroup) // Uses the stored coordinates and adds them to the map as markers
             }
           })
         } else {
-          marker = L.marker([latitudeMap, longitudeMap]).setOpacity(1).addTo(layerGroup) // Uses the stored coordinates and adds them to the map as markers
+          marker = L.marker([latitudeMap, longitudeMap])
+            .setOpacity(1)
+            .addTo(layerGroup) // Uses the stored coordinates and adds them to the map as markers
         }
         // getting data we need for the popups
-        var officeName = (dentists.name)
-        var dentistNum = (dentists.dentists)
-        var address = (dentists.address)
-        var city = (dentists.city)
-        var monHours = (dentists.openinghours.monday)
-        var tuesHours = (dentists.openinghours.tuesday)
-        var wedHours = (dentists.openinghours.wednesday)
-        var thursHours = (dentists.openinghours.thursday)
-        var friHours = (dentists.openinghours.friday)
+        var officeName = dentists.name
+        var dentistNum = dentists.dentists
+        var address = dentists.address
+        var city = dentists.city
+        var monHours = dentists.openinghours.monday
+        var tuesHours = dentists.openinghours.tuesday
+        var wedHours = dentists.openinghours.wednesday
+        var thursHours = dentists.openinghours.thursday
+        var friHours = dentists.openinghours.friday
 
         // adds dental office information as popups on markers
 
-        marker.bindPopup('<b>Dental office:</b> ' + officeName + '<br><b>Address:</b> ' + address + ', <br>' + city +
-        '<br><b>Number of dentists:</b> ' + dentistNum + '<br><b>Opening hours:</b> ' + '<br>Monday: ' + monHours +
-        '<br>Tuesday: ' + tuesHours + '<br>Wednesday: ' + wedHours + '<br>Thursday: ' + thursHours + '<br>Friday: ' +
-        friHours)
+        marker.bindPopup(
+          '<b>Dental office:</b> ' +
+            officeName +
+            '<br><b>Address:</b> ' +
+            address +
+            ', <br>' +
+            city +
+            '<br><b>Number of dentists:</b> ' +
+            dentistNum +
+            '<br><b>Opening hours:</b> ' +
+            '<br>Monday: ' +
+            monHours +
+            '<br>Tuesday: ' +
+            tuesHours +
+            '<br>Wednesday: ' +
+            wedHours +
+            '<br>Thursday: ' +
+            thursHours +
+            '<br>Friday: ' +
+            friHours
+        )
       })
     },
     getDentists(message, map) {
