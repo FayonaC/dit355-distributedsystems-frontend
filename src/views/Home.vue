@@ -8,35 +8,57 @@
             <b-form-datepicker id="date" v-model="availabilityRequest.date"></b-form-datepicker>
             <b-button v-on:click="publishAvailabilityRequest">Request date</b-button>
           </div>
+          <div>
+          <label for="categories">Office Names:</label>
+          <div class="col-8">
+            <select class="form-control" id="name" v-model="dentist.id">
+              <option v-for="dentist in dentists"
+                :key="dentist.id" :value="dentist.id">{{ dentist.name }}</option>
+          </select>
+          </div>
+            <b-button v-on:click="displayOfficeRequest">Request office availability</b-button>
+            <select class="form-control" id="schedule" v-model="timeSlots.date">
+              <option v-for="schedule in schedules"
+                :key="schedule.id">{{ schedule.dentist }}</option>
+          </select>
+        </div>
+
         </div>
         <div class="col-9">
+          <b-container fluid>
           <div id="map"></div>
+          </b-container>
         </div>
       </div>
     </b-container>
-    <Booking :availabilityRequest="availabilityRequest.date"/>
+    <b-container fluid>
+    <BookingForm :availabilityRequest="availabilityRequest.date"/>
+    </b-container>
   </div>
 </template>
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
 import L from 'leaflet'
-import Booking from '../views/Booking.vue'
+import BookingForm from '../components/BookingForm.vue'
 
 var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
 
 export default {
   name: 'home',
   components: {
-    Booking
+    BookingForm
   },
   data() {
     return {
       availabilityRequest: {
         date: null
       },
-      officeRequest: {
-        name: ''
+      dentist: {
+        id: null
+      },
+      timeSlots: {
+        date: ''
       },
       message: 'none',
       dentists: [],
@@ -109,15 +131,14 @@ export default {
       message.qos = 1
       client.publish(message)
     },
-    publishOfficeRequest() {
-      var officeRequest = {
-        name: this.officeRequest.name
+    displayOfficeRequest() {
+      console.log('HELLO')
+      if (this.schedules.dentist === this.dentist.id) {
+        console.log('BYE')
+
+        console.log(this.dentist.id)
       }
-      console.log(JSON.stringify(officeRequest))
-      var message = new Paho.Message(JSON.stringify(officeRequest))
-      message.topic = 'OfficeRequest'
-      message.qos = 1
-      client.publish(message)
+      console.log('TEST')
     },
     onMessageArrived(message) {
       if (JSON.parse(message.payloadString).dentists) {
@@ -155,7 +176,6 @@ export default {
       this.layerGroup.clearLayers()
       var layerGroup = this.layerGroup
       this.dentists.forEach(function (dentists, i) { // Iterates through all the dentists in the JSON
-        var available = false
         var longitudeMap = (dentists.coordinate.longitude) // Saves the longitude in a variable
         var latitudeMap = (dentists.coordinate.latitude) // Saves the latitude in a variable
         var marker = {}
@@ -166,12 +186,10 @@ export default {
               marker = L.marker([latitudeMap, longitudeMap]).setOpacity(0.5).addTo(layerGroup)
             } else {
               marker = L.marker([latitudeMap, longitudeMap]).setOpacity(1).addTo(layerGroup) // Uses the stored coordinates and adds them to the map as markers
-              available = true
             }
           })
         } else {
           marker = L.marker([latitudeMap, longitudeMap]).setOpacity(1).addTo(layerGroup) // Uses the stored coordinates and adds them to the map as markers
-          available = true
         }
         // getting data we need for the popups
         var officeName = (dentists.name)
@@ -189,15 +207,8 @@ export default {
         marker.bindPopup('<b>Dental office:</b> ' + officeName + '<br><b>Address:</b> ' + address + ', <br>' + city +
         '<br><b>Number of dentists:</b> ' + dentistNum + '<br><b>Opening hours:</b> ' + '<br>Monday: ' + monHours +
         '<br>Tuesday: ' + tuesHours + '<br>Wednesday: ' + wedHours + '<br>Thursday: ' + thursHours + '<br>Friday: ' +
-        friHours + getButton(available))
+        friHours)
       })
-      function getButton(available) {
-        if (available) {
-          return '<br><a class="btn btn-primary"  href="/booking">Book appointment</a>'
-        } else {
-          return '<br><a class="btn btn-primary disabled" href="/booking">Book appointment</a>'
-        }
-      }
     },
     getDentists(message, map) {
       this.dentists = JSON.parse(message.payloadString).dentists // Parsing the incoming JSON (message)

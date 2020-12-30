@@ -1,8 +1,7 @@
 <template>
   <div>
     <b-container>
-      <h1>Office Name</h1>
-      {{officeRequest}}
+      <h1>Book Your Appointment</h1>
       <h3>Available appointments:</h3>
         {{availabilityRequest}}
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
@@ -51,8 +50,8 @@ import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
 var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
 
 export default {
-  name: 'booking',
-  props: ['availabilityRequest', 'officeRequest'],
+  name: 'booking-form',
+  props: ['availabilityRequest'],
   data() {
     return {
       booking: {
