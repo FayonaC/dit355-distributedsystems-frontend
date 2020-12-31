@@ -1,8 +1,9 @@
 <template>
   <div>
     <b-container>
-      <h1>Office Name</h1>
+      <h1>Book Your Appointment</h1>
       <h3>Available appointments:</h3>
+      {{ availabilityRequest }}
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
       </b-alert>
@@ -11,16 +12,16 @@
       </b-alert>
       <div class="button-times">
         <div class="row">
-        <div class="col-3">
-          <b-button pill>07:00-07:30</b-button>
+          <div class="col-3">
+            <b-button pill>07:00-07:30</b-button>
+          </div>
+          <div class="col-3">
+            <b-button pill>07:30-08:00</b-button>
+          </div>
+          <div class="col-3">
+            <b-button pill>08:00-08:30</b-button>
+          </div>
         </div>
-        <div class="col-3">
-          <b-button pill>07:30-08:00</b-button>
-        </div>
-        <div class="col-3">
-          <b-button pill>08:00-08:30</b-button>
-        </div>
-      </div>
       </div>
       <form @submit.prevent="publish">
         <label>Enter dentist office ID (for testing only)</label>
@@ -38,7 +39,11 @@
           v-model.number="booking.userId"
           placeholder="Ex. 123456"
         ></b-form-input>
-        <input type="submit" class="btn-primary btn button" value="Confirm booking"/>
+        <input
+          type="submit"
+          class="btn-primary btn button"
+          value="Confirm booking"
+        />
       </form>
     </b-container>
   </div>
@@ -49,7 +54,8 @@ import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
 var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend', true)
 
 export default {
-  name: 'booking',
+  name: 'booking-form',
+  props: ['availabilityRequest'],
   data() {
     return {
       booking: {
@@ -60,8 +66,9 @@ export default {
       },
       showDismissibleAlert: false,
       showDismissibleSuccess: false,
-      msg: ''
-
+      msg: '',
+      dentists: [],
+      schedules: []
     }
   },
 
@@ -70,7 +77,6 @@ export default {
     this.subscribe()
   },
   methods: {
-
     subscribe() {
       // set callback handlers
       client.onConnectionLost = this.onConnectionLost
@@ -91,6 +97,24 @@ export default {
         message.destinationName = 'Availability'
         message.qos = 1
         client.send(message)
+
+        client.subscribe('free-slots')
+        var messageTwo = new Paho.Message('Hello from availability')
+        messageTwo.destinationName = 'Availability'
+        messageTwo.qos = 1
+        client.send(messageTwo)
+
+        client.subscribe('Dentists', subOptions)
+        var messageThree = new Paho.Message('Hello from dentists')
+        messageThree.destinationName = 'Dentist'
+        messageThree.qos = 1
+        client.send(messageThree)
+
+        client.subscribe('OfficeInfo')
+        var messageFour = new Paho.Message('Hello from availability')
+        messageFour.destinationName = 'Availability'
+        messageFour.qos = 1
+        client.send(messageFour)
       }
     },
     // called when the client loses its connection
@@ -106,17 +130,19 @@ export default {
     // called when a message arrives
     onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
-      if (JSON.parse(message.payloadString).time === 'none') {
-        this.msg = 'Sorry, appointment not available.'
-        this.showDismissibleAlert = true
-      } else {
-        console.log(JSON.parse(message.payloadString).requestid)
-        this.msg = 'Booking confirmed!'
+      this.populateDentistArray(message)
+      console.log(JSON.parse(message.payloadString).requestid)
+
+      if (
+        JSON.parse(message.payloadString).requestid === this.booking.requestId
+      ) {
+        this.msg = 'Booking Response Successful!'
         this.showDismissibleSuccess = true
       }
     },
     publish() {
-      var booking = { // Creates the booking with all the fields
+      var booking = {
+        // Creates the booking with all the fields
         userid: this.booking.userId,
         requestid: null,
         dentistid: this.booking.dentistId,
@@ -124,7 +150,10 @@ export default {
         time: this.booking.time
       }
       // Checks if there are users saved in the localstorage OR if the user id typed in is not the same as the existing user in the localstorage
-      if (localStorage.getItem('user') == null || JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId) {
+      if (
+        localStorage.getItem('user') == null ||
+        JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId
+      ) {
         // Creates the user with their id and a requestid
         const user = {
           userId: this.booking.userId,
@@ -134,8 +163,13 @@ export default {
         localStorage.setItem('user', JSON.stringify(user))
       } else {
         // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
-        if (JSON.parse(localStorage.getItem('user')).userId === this.booking.userId) {
-          booking.requestid = JSON.parse(localStorage.getItem('user')).requestId
+        if (
+          JSON.parse(localStorage.getItem('user')).userId ===
+          this.booking.userId
+        ) {
+          booking.requestid = JSON.parse(
+            localStorage.getItem('user')
+          ).requestId
           booking.requestid = booking.requestid + 1
           // Creates the user with their id and a requestid
           const user = {
@@ -150,6 +184,16 @@ export default {
       message.topic = 'BookingRequest'
       message.qos = 1
       client.publish(message)
+    },
+    populateDentistArray(message) {
+      var dentists = JSON.parse(message.payloadString).dentists
+      var dentistsNew = []
+      var officeName = ''
+      for (var i = 0; i < dentists.length; i++) {
+        officeName = dentists[i].name
+        dentistsNew.push(officeName)
+      }
+      this.dentists = dentistsNew
     }
   }
 }
