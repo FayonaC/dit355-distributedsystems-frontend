@@ -1,8 +1,6 @@
 <template>
   <div>
     <b-container>
-      <h1>Book Your Appointment</h1>
-      <h3>Available appointments:</h3>
       {{ availabilityRequest }}
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
@@ -10,19 +8,7 @@
       <b-alert v-model="showDismissibleSuccess" variant="success" dismissible>
         {{ msg }}
       </b-alert>
-      <div class="button-times">
-        <div class="row">
-          <div class="col-3">
-            <b-button pill>07:00-07:30</b-button>
-          </div>
-          <div class="col-3">
-            <b-button pill>07:30-08:00</b-button>
-          </div>
-          <div class="col-3">
-            <b-button pill>08:00-08:30</b-button>
-          </div>
-        </div>
-      </div>
+
       <form @submit.prevent="publish">
         <label>Enter dentist office ID (for testing only)</label>
         <b-form-input
@@ -51,11 +37,11 @@
 
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
-var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend', true)
+var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend-booking', true)
 
 export default {
   name: 'booking-form',
-  props: ['availabilityRequest'],
+  props: ['setBookingRequestInfo'],
   data() {
     return {
       booking: {
@@ -130,13 +116,11 @@ export default {
     // called when a message arrives
     onMessageArrived(message) {
       console.log('onMessageArrived:' + message.payloadString)
-      this.populateDentistArray(message)
-      console.log(JSON.parse(message.payloadString).requestid)
 
       if (
         JSON.parse(message.payloadString).requestid === this.booking.requestId
       ) {
-        this.msg = 'Booking Response Successful!'
+        this.msg = 'Booking request successful!'
         this.showDismissibleSuccess = true
       }
     },
@@ -184,16 +168,6 @@ export default {
       message.topic = 'BookingRequest'
       message.qos = 1
       client.publish(message)
-    },
-    populateDentistArray(message) {
-      var dentists = JSON.parse(message.payloadString).dentists
-      var dentistsNew = []
-      var officeName = ''
-      for (var i = 0; i < dentists.length; i++) {
-        officeName = dentists[i].name
-        dentistsNew.push(officeName)
-      }
-      this.dentists = dentistsNew
     }
   }
 }

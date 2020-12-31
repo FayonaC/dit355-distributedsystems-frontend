@@ -14,7 +14,7 @@
             >
           </div>
           <div>
-            <label for="office">Office Names:</label>
+            <label for="categories">Office Names:</label>
             <div class="col-8">
               <select class="form-control" id="name" v-model="dentist.id">
                 <option
@@ -38,7 +38,14 @@
                 {{ appointment.startTime }}
               </option>
             </select>
-            <label for="timeslots">To see available appointments click above ^</label>
+            <b-button v-on:click="setBookingRequestInfo"
+              >Select time slot</b-button>
+            <label for="categories">To see available appointments click above ^</label>
+          </div>
+          <div>
+            <b-container fluid>
+              <BookingForm :availabilityRequest="availabilityRequest.date" />
+            </b-container>
           </div>
         </div>
         <div class="col-9">
@@ -47,12 +54,6 @@
           </b-container>
         </div>
       </div>
-                      <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
-        {{ msg }}
-      </b-alert>
-    </b-container>
-    <b-container fluid>
-      <BookingForm :availabilityRequest="availabilityRequest.date" />
     </b-container>
   </div>
 </template>
@@ -74,6 +75,10 @@ export default {
       availabilityRequest: {
         date: null
       },
+      bookingRequestInfo: {
+        dentistId: null,
+        time: ''
+      },
       dentist: {
         id: null
       },
@@ -87,9 +92,7 @@ export default {
       schedules: [],
       map: {},
       unavailable: [],
-      layerGroup: {},
-      showDismissibleAlert: false,
-      msg: ''
+      layerGroup: {}
     }
   },
   mounted() {
@@ -114,10 +117,26 @@ export default {
     this.layerGroup = L.layerGroup().addTo(this.map)
   },
   methods: {
+
+    setBookingRequestInfo() {
+      var stringDate = JSON.stringify(this.availabilityRequest.date)
+      console.log(stringDate)
+      var stringTime = JSON.stringify(this.appointment.startTime)
+      console.log(stringTime)
+      var combo = [stringDate, stringTime].join(' ')
+      console.log(combo)
+      var bookingRequestInfo = {
+        dentistId: this.dentist.id,
+        time: combo
+      }
+      console.log(bookingRequestInfo.dentistId)
+      console.log(bookingRequestInfo.time)
+    },
     subscribe() {
       // set callback handlers
-      client.onConnectionLost = this.onConnectionLost
+      client.onConnectionLost = onConnectionLost
       client.onMessageArrived = this.onMessageArrived
+
       // connect the client
       client.connect({ onSuccess: onConnect })
 
@@ -140,14 +159,12 @@ export default {
         messageTwo.destinationName = 'Availability'
         client.send(messageTwo)
       }
-    },
-    onConnectionLost(responseObject) {
-      if (responseObject.errorCode !== 0) {
-        this.availabilityRequest = 'Connection Lost! Try refreshing...'
-        this.showDismissibleAlert = true
-        console.log('onConnectionLost:' + responseObject.errorMessage)
-        client.unsubscribe('Dentists', 'free-slots')
-        client.disconnect()
+
+      // called when the client loses its connection
+      function onConnectionLost(responseObject) {
+        if (responseObject.errorCode !== 0) {
+          console.log('onConnectionLost:' + responseObject.errorMessage)
+        }
       }
     },
     publishAvailabilityRequest() {
