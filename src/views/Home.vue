@@ -14,7 +14,7 @@
             >
           </div>
           <div>
-            <label for="categories">Office Names:</label>
+            <label for="office">Office Names:</label>
             <div class="col-8">
               <select class="form-control" id="name" v-model="dentist.id">
                 <option
@@ -38,7 +38,7 @@
                 {{ appointment.startTime }}
               </option>
             </select>
-            <label for="categories">To see available appointments click above ^</label>
+            <label for="timeslots">To see available appointments click above ^</label>
           </div>
         </div>
         <div class="col-9">
