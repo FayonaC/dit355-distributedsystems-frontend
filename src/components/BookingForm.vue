@@ -29,6 +29,7 @@
           type="submit"
           class="btn-primary btn button"
           value="Confirm booking"
+          v-on:click="displayOfficeTimeSlots"
         />
       </form>
     </b-container>
@@ -41,7 +42,7 @@ var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend-book
 
 export default {
   name: 'booking-form',
-  props: ['setBookingRequestInfo'],
+  props: ['setBookingRequestInfo', 'displayOfficeTimeSlots'],
   data() {
     return {
       booking: {
