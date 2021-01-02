@@ -45,7 +45,7 @@
           <div>
             <b-container fluid>
                   <b-container>
-      {{ availabilityRequest }}
+      Your chosen appointment date: {{ availabilityRequest.date }}
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
       </b-alert>
@@ -64,7 +64,7 @@
           v-model="booking.time"
           placeholder="Ex. 2020-01-01 10:00"
         ></b-form-input>
-        <label>Enter your user ID (numbers only)</label>
+        <label>Enter your 6-digit user ID (numbers only)</label>
         <b-form-input
           v-model.number="booking.userId"
           placeholder="Ex. 123456"
@@ -73,7 +73,6 @@
           type="submit"
           class="btn-primary btn button"
           value="Confirm booking"
-          v-on:click="displayOfficeTimeSlots"
         />
       </form>
     </b-container>
@@ -287,7 +286,7 @@ export default {
     },
     onMessageArrived(message) {
       var topic = message.topic
-
+      // Handles message according to topic
       switch (topic) {
         case 'Dentists':
           this.getDentists(message, this.map)
@@ -297,39 +296,21 @@ export default {
           console.log(this.schedules)
           break
         case 'BookingResponse' :
-          console.log(JSON.parse(message.payloadString).requestid)
-          console.log(this.booking.requestId)
-          // if (JSON.parse(message.payloadString).requestid === this.booking.requestId
-          // ) {
-          //   this.msg = 'Booking request successful!'
-          //   this.showDismissibleSuccess = true
-          // } else if (JSON.parse(message.payloadString).time === 'none'
-          // ) {
-          this.msg = 'Booking request unsuccessful!'
-          this.showDismissibleSuccess = true
-
+          console.log('onMessageArrived:' + message.payloadString)
+          // Checks for 'none' in the BookingResponse from Availability
+          if (!JSON.parse(message.payloadString).time.includes('none')
+          ) {
+            this.msg = 'Booking request successful!'
+            this.showDismissibleSuccess = true
+          } else if (JSON.parse(message.payloadString).time.includes('none')
+          ) {
+            this.msg = 'Appointment unavailable. Please refresh for updated times.'
+            this.showDismissibleAlert = true
+          }
           break
         default:
           console.log('No topic found')
       }
-
-      // console.log('this is the message' + JSON.stringify(message))
-      // if (JSON.parse(message.payloadString).dentists) {
-      //   this.getDentists(message, this.map)
-      // } else if (JSON.parse(message.payloadString).schedules) {
-      //   this.availability(message, this.map)
-      //   console.log(this.schedules)
-      // } else if (
-      //   JSON.parse(message.payloadString).requestid === this.booking.requestId
-      // ) {
-      //   this.msg = 'Booking request successful!'
-      //   this.showDismissibleSuccess = true
-      // } else if (JSON.parse(message.payloadString).time === 'none'
-      // ) {
-      //   this.msg = 'Booking request unsuccessful!'
-      //   this.showDismissibleSuccess = false
-      // }
-      // console.log('I have received a message')
     },
     availability(message, map) {
       this.unavailable = []
