@@ -2,73 +2,59 @@
   <div>
     <b-container fluid>
       <div class="row">
-        <div class="col-3">
-          <div class="calendar">
-            <label>Pick a date to see available dentists</label>
-            <b-form-datepicker
+        <div class="col-3 booking-bar">
+          <label>Pick a date to see available dentists</label>
+          <b-form-datepicker
               id="date"
-              v-model="availabilityRequest.date"
-            ></b-form-datepicker>
-            <b-button v-on:click="publishAvailabilityRequest"
-              >Request date</b-button
-            >
-          </div>
-          <div>
-            <label for="categories">Office Names:</label>
-            <div class="col-8">
-              <select class="form-control" id="name" v-model="dentist.id">
-                <option
-                  v-for="dentist in dentists"
-                  :key="dentist.id"
-                  :value="dentist.id"
-                >
-                  {{ dentist.name }}
-                </option>
-              </select>
-            </div>
-            <b-button v-on:click="displayOfficeTimeSlots"
-              >Request office availability</b-button
-            >
+              v-model="availabilityRequest.date">
+          </b-form-datepicker>
+          <p></p>
+          <b-button v-on:click="publishAvailabilityRequest">Request date</b-button>
+          <p></p>
+          <label for="categories">Dental surgery:</label>
+            <select class="form-control" id="name" v-model="dentist.id">
+              <option
+                v-for="dentist in dentists"
+                :key="dentist.id"
+                :value="dentist.id">
+                {{ dentist.name }}
+              </option>
+            </select>
+            <p></p>
+            <b-button v-on:click="displayOfficeTimeSlots">Request surgery availability</b-button>
+            <p></p>
+            <label for="categories">Available appointment times:</label>
             <select
               class="form-control"
               id="startTime"
-              v-model="appointment.startTime"
-            >
+              v-model="appointment.startTime">
               <option v-for="appointment in appointments" :key="appointment.id">
                 {{ appointment.startTime }}
               </option>
             </select>
-            <b-button v-on:click="combineDateTime"
-              >Select time slot</b-button>
-            <label for="categories">To see available appointments click above ^</label>
-          </div>
-          <div>
-            <b-container fluid>
-                  <b-container>
-      <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
-        {{ msg }}
-      </b-alert>
-      <b-alert v-model="showDismissibleSuccess" variant="success" dismissible>
-        {{ msg }}
-      </b-alert>
-      <p>Your selected appointment date: {{ availabilityRequest.date }}</p>
-      <p>Your selected dentist office: {{ dentist.id }}</p>
-      <p>Your selected time slot: {{ appointment.startTime }}</p>
-      <form @submit.prevent="publish">
-        <label>Enter your 6-digit user ID (numbers only)</label>
-        <b-form-input
-          v-model.number="booking.userId"
-          placeholder="Ex. 123456"
-        ></b-form-input>
-        <input
-          type="submit"
-          class="btn-primary btn button"
-          value="Confirm booking"
-        />
-      </form>
-    </b-container>
-            </b-container>
-          </div>
+            <p></p>
+            <b-button v-on:click="combineDateTime">Select appointment time</b-button>
+            <div>
+              <form @submit.prevent="publish">
+                <label>Enter your user ID (up to 6 digits)</label>
+                <b-form-input
+                  v-model.number="booking.userId"
+                  placeholder="Ex. 123456">
+                </b-form-input>
+                <p></p>
+                <input
+                  type="submit"
+                  class="btn-primary btn-lg"
+                  value="Confirm booking"/>
+              </form>
+              <p></p>
+              <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
+                {{ msg }}
+              </b-alert>
+              <b-alert v-model="showDismissibleSuccess" variant="success" dismissible>
+                {{ msg }}
+              </b-alert>
+            </div>
         </div>
         <div class="col-9">
           <b-container fluid>
