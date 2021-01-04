@@ -231,7 +231,6 @@ export default {
             requestId: 1
           }
           booking.requestid = user.requestId
-          this.booking.requestId = booking.requestid
           localStorage.setItem('user', JSON.stringify(user))
         } else {
           // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
@@ -247,6 +246,8 @@ export default {
           }
         }
         console.log('Booking ' + JSON.stringify(booking))
+        this.booking.requestId = booking.requestid
+
         var message = new Paho.Message(JSON.stringify(booking))
         message.topic = 'BookingRequest'
         message.qos = 1
@@ -287,6 +288,11 @@ export default {
         case 'BookingResponse' :
           console.log('onMessageArrived:' + message.payloadString)
           // Checks for 'none' in the BookingResponse from Availability
+          console.log('this.bookingre ' + this.booking.requestId)
+          console.log('req response ' + JSON.parse(message.payloadString).requestid)
+          console.log('user form ' + this.booking.userId)
+          console.log('user response ' + JSON.parse(message.payloadString).userid)
+
           if (JSON.parse(message.payloadString).requestid === this.booking.requestId &&
           JSON.parse(message.payloadString).userid === this.booking.userId) {
             this.msg = 'Booking request successful!'
