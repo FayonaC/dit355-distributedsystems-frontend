@@ -37,8 +37,12 @@ footer {
     margin-top: 5vh;
 }
 
+.booking-bar {
+    margin-top: 2em;
+}
+
 form {
-    margin-top: 20vh;
+    margin-top: 2vh;
 }
 
 .button {
