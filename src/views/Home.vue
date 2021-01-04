@@ -222,39 +222,43 @@ export default {
         issuance: Date.now(),
         time: this.dateTimeCombo
       }
-      if (this.validateUserId(booking.userid) === true) {
-        // Checks if there are users saved in the localstorage OR if the user id typed in is not the same as the existing user in the localstorage
-        if (localStorage.getItem('user') == null || JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId) {
-          // Creates the user with their id and a requestid
-          const user = {
-            userId: this.booking.userId,
-            requestId: 1
-          }
-          booking.requestid = user.requestId
-          localStorage.setItem('user', JSON.stringify(user))
-        } else {
-          // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
-          if (JSON.parse(localStorage.getItem('user')).userId === this.booking.userId) {
-            booking.requestid = JSON.parse(localStorage.getItem('user')).requestId
-            booking.requestid = booking.requestid + 1
+      if (!(booking.dentistid === null || booking.time === null || booking.time === '' || booking.time.length < 15)) {
+        if (this.validateUserId(booking.userid) === true) {
+          // Checks if there are users saved in the localstorage OR if the user id typed in is not the same as the existing user in the localstorage
+          if (localStorage.getItem('user') == null || JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId) {
             // Creates the user with their id and a requestid
             const user = {
               userId: this.booking.userId,
-              requestId: booking.requestid
+              requestId: 1
             }
+            booking.requestid = user.requestId
+            this.booking.requestId = booking.requestid
             localStorage.setItem('user', JSON.stringify(user))
+          } else {
+            // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
+            if (JSON.parse(localStorage.getItem('user')).userId === this.booking.userId) {
+              booking.requestid = JSON.parse(localStorage.getItem('user')).requestId
+              booking.requestid = booking.requestid + 1
+              // Creates the user with their id and a requestid
+              const user = {
+                userId: this.booking.userId,
+                requestId: booking.requestid
+              }
+              localStorage.setItem('user', JSON.stringify(user))
+            }
           }
+          console.log('Booking ' + JSON.stringify(booking))
+          var message = new Paho.Message(JSON.stringify(booking))
+          message.topic = 'BookingRequest'
+          message.qos = 1
+          client.publish(message)
+          console.log('Booking request has now been published')
+        } else {
+          this.msg = 'Invalid User ID: must be 6 digits long'
+          this.showDismissibleAlert = true
         }
-        console.log('Booking ' + JSON.stringify(booking))
-        this.booking.requestId = booking.requestid
-
-        var message = new Paho.Message(JSON.stringify(booking))
-        message.topic = 'BookingRequest'
-        message.qos = 1
-        client.publish(message)
-        console.log('Booking request has now been published')
       } else {
-        this.msg = 'Invalid User ID: must be 6 digits long'
+        this.msg = 'All fields must be selected or filled'
         this.showDismissibleAlert = true
       }
     },
@@ -288,11 +292,6 @@ export default {
         case 'BookingResponse' :
           console.log('onMessageArrived:' + message.payloadString)
           // Checks for 'none' in the BookingResponse from Availability
-          console.log('this.bookingre ' + this.booking.requestId)
-          console.log('req response ' + JSON.parse(message.payloadString).requestid)
-          console.log('user form ' + this.booking.userId)
-          console.log('user response ' + JSON.parse(message.payloadString).userid)
-
           if (JSON.parse(message.payloadString).requestid === this.booking.requestId &&
           JSON.parse(message.payloadString).userid === this.booking.userId && !JSON.parse(message.payloadString).time.includes('none')) {
             this.msg = 'Booking request successful!'
