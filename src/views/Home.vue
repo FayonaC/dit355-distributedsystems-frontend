@@ -38,32 +38,23 @@
                 {{ appointment.startTime }}
               </option>
             </select>
-            <b-button v-on:click="setBookingRequestInfo"
+            <b-button v-on:click="combineDateTime"
               >Select time slot</b-button>
             <label for="categories">To see available appointments click above ^</label>
           </div>
           <div>
             <b-container fluid>
                   <b-container>
-      Your chosen appointment date: {{ availabilityRequest.date }}
       <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
         {{ msg }}
       </b-alert>
       <b-alert v-model="showDismissibleSuccess" variant="success" dismissible>
         {{ msg }}
       </b-alert>
-
+      <p>Your selected appointment date: {{ availabilityRequest.date }}</p>
+      <p>Your selected dentist office: {{ dentist.id }}</p>
+      <p>Your selected time slot: {{ appointment.startTime }}</p>
       <form @submit.prevent="publish">
-        <label>Enter dentist office ID (for testing only)</label>
-        <b-form-input
-          v-model.number="booking.dentistId"
-          placeholder="Ex. 1"
-        ></b-form-input>
-        <label>Enter appointment date and time (for testing only)</label>
-        <b-form-input
-          v-model="booking.time"
-          placeholder="Ex. 2020-01-01 10:00"
-        ></b-form-input>
         <label>Enter your 6-digit user ID (numbers only)</label>
         <b-form-input
           v-model.number="booking.userId"
@@ -108,12 +99,9 @@ export default {
       showDismissibleAlert: false,
       showDismissibleSuccess: false,
       msg: '',
+      dateTimeCombo: '',
       availabilityRequest: {
         date: null
-      },
-      bookingRequestInfo: {
-        dentistId: null,
-        time: ''
       },
       dentist: {
         id: null
@@ -153,20 +141,21 @@ export default {
     this.layerGroup = L.layerGroup().addTo(this.map)
   },
   methods: {
-
-    setBookingRequestInfo() {
-      var stringDate = JSON.stringify(this.availabilityRequest.date)
-      console.log(stringDate)
-      var stringTime = JSON.stringify(this.appointment.startTime)
-      console.log(stringTime)
-      var combo = [stringDate, stringTime].join(' ')
-      console.log(combo)
-      var bookingRequestInfo = {
-        dentistId: this.dentist.id,
-        time: combo
+    validateUserId(userId) {
+      var correctId = true
+      var hackyId = '' + userId
+      if (hackyId.length > 6) {
+        correctId = false
+        return correctId
       }
-      console.log(bookingRequestInfo.dentistId)
-      console.log(bookingRequestInfo.time)
+      if (!/^[0-9]+$/.test(userId)) {
+        correctId = false
+        return correctId
+      }
+      return correctId
+    },
+    combineDateTime() {
+      this.dateTimeCombo = this.availabilityRequest.date + ' ' + this.appointment.startTime
     },
     subscribe() {
       // set callback handlers
@@ -224,49 +213,49 @@ export default {
       client.publish(message)
     },
     publish() {
+      this.combineDateTime()
       var booking = {
         // Creates the booking with all the fields
         userid: this.booking.userId,
         requestid: null,
-        dentistid: this.booking.dentistId,
+        dentistid: this.dentist.id,
         issuance: Date.now(),
-        time: this.booking.time
+        time: this.dateTimeCombo
       }
-      // Checks if there are users saved in the localstorage OR if the user id typed in is not the same as the existing user in the localstorage
-      if (
-        localStorage.getItem('user') == null ||
-        JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId
-      ) {
-        // Creates the user with their id and a requestid
-        const user = {
-          userId: this.booking.userId,
-          requestId: 1
-        }
-        booking.requestid = user.requestId
-        localStorage.setItem('user', JSON.stringify(user))
-      } else {
-        // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
-        if (
-          JSON.parse(localStorage.getItem('user')).userId ===
-          this.booking.userId
-        ) {
-          booking.requestid = JSON.parse(
-            localStorage.getItem('user')
-          ).requestId
-          booking.requestid = booking.requestid + 1
+      if (this.validateUserId(booking.userid) === true) {
+        // Checks if there are users saved in the localstorage OR if the user id typed in is not the same as the existing user in the localstorage
+        if (localStorage.getItem('user') == null || JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId) {
           // Creates the user with their id and a requestid
           const user = {
             userId: this.booking.userId,
-            requestId: booking.requestid
+            requestId: 1
           }
+          booking.requestid = user.requestId
+          this.booking.requestId = booking.requestid
           localStorage.setItem('user', JSON.stringify(user))
+        } else {
+          // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
+          if (JSON.parse(localStorage.getItem('user')).userId === this.booking.userId) {
+            booking.requestid = JSON.parse(localStorage.getItem('user')).requestId
+            booking.requestid = booking.requestid + 1
+            // Creates the user with their id and a requestid
+            const user = {
+              userId: this.booking.userId,
+              requestId: booking.requestid
+            }
+            localStorage.setItem('user', JSON.stringify(user))
+          }
         }
+        console.log('Booking ' + JSON.stringify(booking))
+        var message = new Paho.Message(JSON.stringify(booking))
+        message.topic = 'BookingRequest'
+        message.qos = 1
+        client.publish(message)
+        console.log('Booking request has now been published')
+      } else {
+        this.msg = 'Invalid User ID: must be 6 digits long'
+        this.showDismissibleAlert = true
       }
-      console.log('Booking ' + JSON.stringify(booking))
-      var message = new Paho.Message(JSON.stringify(booking))
-      message.topic = 'BookingRequest'
-      message.qos = 1
-      client.publish(message)
     },
     displayOfficeTimeSlots() {
       // Creates the times slots for a selected dental office
@@ -298,8 +287,8 @@ export default {
         case 'BookingResponse' :
           console.log('onMessageArrived:' + message.payloadString)
           // Checks for 'none' in the BookingResponse from Availability
-          if (!JSON.parse(message.payloadString).time.includes('none')
-          ) {
+          if (JSON.parse(message.payloadString).requestid === this.booking.requestId &&
+          JSON.parse(message.payloadString).userid === this.booking.userId) {
             this.msg = 'Booking request successful!'
             this.showDismissibleSuccess = true
           } else if (JSON.parse(message.payloadString).time.includes('none')
