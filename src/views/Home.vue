@@ -294,7 +294,7 @@ export default {
           console.log('user response ' + JSON.parse(message.payloadString).userid)
 
           if (JSON.parse(message.payloadString).requestid === this.booking.requestId &&
-          JSON.parse(message.payloadString).userid === this.booking.userId) {
+          JSON.parse(message.payloadString).userid === this.booking.userId && !JSON.parse(message.payloadString).time.includes('none')) {
             this.msg = 'Booking request successful!'
             this.showDismissibleSuccess = true
           } else if (JSON.parse(message.payloadString).time.includes('none')
