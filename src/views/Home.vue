@@ -14,7 +14,7 @@
             >
           </div>
           <div>
-            <label for="office">Office Names:</label>
+            <label for="categories">Office Names:</label>
             <div class="col-8">
               <select class="form-control" id="name" v-model="dentist.id">
                 <option
@@ -38,7 +38,36 @@
                 {{ appointment.startTime }}
               </option>
             </select>
-            <label for="timeslots">To see available appointments click above ^</label>
+            <b-button v-on:click="combineDateTime"
+              >Select time slot</b-button>
+            <label for="categories">To see available appointments click above ^</label>
+          </div>
+          <div>
+            <b-container fluid>
+                  <b-container>
+      <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
+        {{ msg }}
+      </b-alert>
+      <b-alert v-model="showDismissibleSuccess" variant="success" dismissible>
+        {{ msg }}
+      </b-alert>
+      <p>Your selected appointment date: {{ availabilityRequest.date }}</p>
+      <p>Your selected dentist office: {{ dentist.id }}</p>
+      <p>Your selected time slot: {{ appointment.startTime }}</p>
+      <form @submit.prevent="publish">
+        <label>Enter your 6-digit user ID (numbers only)</label>
+        <b-form-input
+          v-model.number="booking.userId"
+          placeholder="Ex. 123456"
+        ></b-form-input>
+        <input
+          type="submit"
+          class="btn-primary btn button"
+          value="Confirm booking"
+        />
+      </form>
+    </b-container>
+            </b-container>
           </div>
         </div>
         <div class="col-9">
@@ -47,12 +76,6 @@
           </b-container>
         </div>
       </div>
-                      <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
-        {{ msg }}
-      </b-alert>
-    </b-container>
-    <b-container fluid>
-      <BookingForm :availabilityRequest="availabilityRequest.date" />
     </b-container>
   </div>
 </template>
@@ -60,17 +83,23 @@
 <script>
 import Paho from '../../libraries/paho.javascript-1.1.0/paho-mqtt.js'
 import L from 'leaflet'
-import BookingForm from '../components/BookingForm.vue'
 
-var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend')
+var client = new Paho.Client(location.hostname, Number(9001), '', 'frontend', true)
 
 export default {
   name: 'home',
-  components: {
-    BookingForm
-  },
   data() {
     return {
+      booking: {
+        userId: null,
+        requestId: null,
+        dentistId: null,
+        time: ''
+      },
+      showDismissibleAlert: false,
+      showDismissibleSuccess: false,
+      msg: '',
+      dateTimeCombo: '',
       availabilityRequest: {
         date: null
       },
@@ -87,9 +116,7 @@ export default {
       schedules: [],
       map: {},
       unavailable: [],
-      layerGroup: {},
-      showDismissibleAlert: false,
-      msg: ''
+      layerGroup: {}
     }
   },
   mounted() {
@@ -114,10 +141,27 @@ export default {
     this.layerGroup = L.layerGroup().addTo(this.map)
   },
   methods: {
+    validateUserId(userId) {
+      var correctId = true
+      var hackyId = '' + userId
+      if (hackyId.length > 6) {
+        correctId = false
+        return correctId
+      }
+      if (!/^[0-9]+$/.test(userId)) {
+        correctId = false
+        return correctId
+      }
+      return correctId
+    },
+    combineDateTime() {
+      this.dateTimeCombo = this.availabilityRequest.date + ' ' + this.appointment.startTime
+    },
     subscribe() {
       // set callback handlers
       client.onConnectionLost = this.onConnectionLost
       client.onMessageArrived = this.onMessageArrived
+
       // connect the client
       client.connect({ onSuccess: onConnect })
 
@@ -129,9 +173,9 @@ export default {
         var subOptions = {
           qos: 1
         }
-        client.subscribe('Dentists', subOptions)
-        var message = new Paho.Message('Hello from dentists')
-        message.destinationName = 'Dentist'
+        client.subscribe('BookingResponse', subOptions)
+        var message = new Paho.Message('Hello')
+        message.destinationName = 'Availability'
         message.qos = 1
         client.send(message)
 
@@ -139,14 +183,21 @@ export default {
         var messageTwo = new Paho.Message('Hello from availability')
         messageTwo.destinationName = 'Availability'
         client.send(messageTwo)
+
+        client.subscribe('Dentists', subOptions)
+        var messageThree = new Paho.Message('Hello from dentists')
+        messageThree.destinationName = 'Dentist'
+        messageThree.qos = 1
+        client.send(messageThree)
       }
     },
+    // called when the client loses its connection
     onConnectionLost(responseObject) {
       if (responseObject.errorCode !== 0) {
         this.availabilityRequest = 'Connection Lost! Try refreshing...'
         this.showDismissibleAlert = true
         console.log('onConnectionLost:' + responseObject.errorMessage)
-        client.unsubscribe('Dentists', 'free-slots')
+        client.unsubscribe('BookingResponse')
         client.disconnect()
       }
     },
@@ -160,6 +211,56 @@ export default {
       message.topic = 'AvailabilityRequest'
       message.qos = 1
       client.publish(message)
+    },
+    publish() {
+      this.combineDateTime()
+      var booking = {
+        // Creates the booking with all the fields
+        userid: this.booking.userId,
+        requestid: null,
+        dentistid: this.dentist.id,
+        issuance: Date.now(),
+        time: this.dateTimeCombo
+      }
+      if (!(booking.dentistid === null || booking.time === null || booking.time === '' || booking.time.length < 15)) {
+        if (this.validateUserId(booking.userid) === true) {
+          // Checks if there are users saved in the localstorage OR if the user id typed in is not the same as the existing user in the localstorage
+          if (localStorage.getItem('user') == null || JSON.parse(localStorage.getItem('user')).userId !== this.booking.userId) {
+            // Creates the user with their id and a requestid
+            const user = {
+              userId: this.booking.userId,
+              requestId: 1
+            }
+            booking.requestid = user.requestId
+            this.booking.requestId = booking.requestid
+            localStorage.setItem('user', JSON.stringify(user))
+          } else {
+            // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
+            if (JSON.parse(localStorage.getItem('user')).userId === this.booking.userId) {
+              booking.requestid = JSON.parse(localStorage.getItem('user')).requestId
+              booking.requestid = booking.requestid + 1
+              // Creates the user with their id and a requestid
+              const user = {
+                userId: this.booking.userId,
+                requestId: booking.requestid
+              }
+              localStorage.setItem('user', JSON.stringify(user))
+            }
+          }
+          console.log('Booking ' + JSON.stringify(booking))
+          var message = new Paho.Message(JSON.stringify(booking))
+          message.topic = 'BookingRequest'
+          message.qos = 1
+          client.publish(message)
+          console.log('Booking request has now been published')
+        } else {
+          this.msg = 'Invalid User ID: must be 6 digits long'
+          this.showDismissibleAlert = true
+        }
+      } else {
+        this.msg = 'All fields must be selected or filled'
+        this.showDismissibleAlert = true
+      }
     },
     displayOfficeTimeSlots() {
       // Creates the times slots for a selected dental office
@@ -178,11 +279,31 @@ export default {
       this.appointments = appointments
     },
     onMessageArrived(message) {
-      if (JSON.parse(message.payloadString).dentists) {
-        this.getDentists(message, this.map)
-      } else if (JSON.parse(message.payloadString).schedules) {
-        this.availability(message, this.map)
-        console.log(this.schedules)
+      var topic = message.topic
+      // Handles message according to topic
+      switch (topic) {
+        case 'Dentists':
+          this.getDentists(message, this.map)
+          break
+        case 'free-slots' :
+          this.availability(message, this.map)
+          console.log(this.schedules)
+          break
+        case 'BookingResponse' :
+          console.log('onMessageArrived:' + message.payloadString)
+          // Checks for 'none' in the BookingResponse from Availability
+          if (JSON.parse(message.payloadString).requestid === this.booking.requestId &&
+          JSON.parse(message.payloadString).userid === this.booking.userId && !JSON.parse(message.payloadString).time.includes('none')) {
+            this.msg = 'Booking request successful!'
+            this.showDismissibleSuccess = true
+          } else if (JSON.parse(message.payloadString).time.includes('none')
+          ) {
+            this.msg = 'Appointment unavailable. Please refresh for updated times.'
+            this.showDismissibleAlert = true
+          }
+          break
+        default:
+          console.log('No topic found')
       }
     },
     availability(message, map) {
