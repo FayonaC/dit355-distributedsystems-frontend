@@ -4,50 +4,31 @@
       <div class="row">
         <div class="col-3 booking-bar">
           <label>Pick a date to see available dentists</label>
-          <b-form-datepicker
-              id="date"
-              v-model="availabilityRequest.date">
-          </b-form-datepicker>
-          <p></p>
-          <b-button v-on:click="publishAvailabilityRequest">Request date</b-button>
-          <p></p>
+          <b-form-datepicker id="date" v-model="availabilityRequest.date"></b-form-datepicker>
+          <b-button v-on:click="publishAvailabilityRequest" class="button-fix">Request date</b-button>
           <label for="categories">Dental surgery:</label>
             <select class="form-control" id="name" v-model="dentist.id">
-              <option
-                v-for="dentist in dentists"
-                :key="dentist.id"
-                :value="dentist.id">
+              <option v-for="dentist in dentists" :key="dentist.id" :value="dentist.id">
                 {{ dentist.name }}
               </option>
             </select>
-            <p></p>
-            <b-button v-on:click="displayOfficeTimeSlots">Request surgery availability</b-button>
-            <p></p>
+            <b-button v-on:click="displayOfficeTimeSlots" class="button-fix">Request surgery availability</b-button>
             <label for="categories">Available appointment times:</label>
-            <select
-              class="form-control"
-              id="startTime"
-              v-model="appointment.startTime">
+            <select class="form-control" id="startTime" v-model="appointment.startTime">
               <option v-for="appointment in appointments" :key="appointment.id">
                 {{ appointment.startTime }}
               </option>
             </select>
-            <p></p>
-            <b-button v-on:click="combineDateTime">Select appointment time</b-button>
+            <b-button v-on:click="combineDateTime" class="button-fix">Select appointment time</b-button>
             <div>
               <form @submit.prevent="publish">
                 <label>Enter your user ID (up to 6 digits)</label>
-                <b-form-input
-                  v-model.number="booking.userId"
-                  placeholder="Ex. 123456">
-                </b-form-input>
-                <p></p>
-                <input
-                  type="submit"
-                  class="btn-primary btn-lg"
-                  value="Confirm booking"/>
+                <b-form-input v-model.number="booking.userId" placeholder="Ex. 123456"></b-form-input>
+                <input :disabled="isLoading === ''" type="submit" class="btn-primary btn-lg button-fix" value="Confirm booking"/>
+                <span id="loading" v-bind:class="isLoading">
+                  <b-icon font-scale="3" animation="spin" icon="hourglass-split" scale="1"></b-icon>
+                </span>
               </form>
-              <p></p>
               <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
                 {{ msg }}
               </b-alert>
@@ -102,7 +83,8 @@ export default {
       schedules: [],
       map: {},
       unavailable: [],
-      layerGroup: {}
+      layerGroup: {},
+      isLoading: ''
     }
   },
   mounted() {
@@ -125,6 +107,7 @@ export default {
     ).addTo(this.map)
 
     this.layerGroup = L.layerGroup().addTo(this.map)
+    this.isLoading = 'hideLoading'
   },
   methods: {
     validateUserId(userId) {
@@ -239,6 +222,7 @@ export default {
           message.qos = 1
           client.publish(message)
           console.log('Booking request has now been published')
+          this.isLoading = ''
         } else {
           this.msg = 'Invalid User ID: must be 6 digits long'
           this.showDismissibleAlert = true
@@ -287,6 +271,7 @@ export default {
             this.msg = 'Appointment unavailable. Please refresh for updated times.'
             this.showDismissibleAlert = true
           }
+          this.isLoading = 'hideLoading'
           break
         default:
           console.log('No topic found')

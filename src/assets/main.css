@@ -41,10 +41,6 @@ footer {
     margin-top: 2em;
 }
 
-form {
-    margin-top: 2vh;
-}
-
 .button {
     margin-top: 2vh;
 }
@@ -58,3 +54,21 @@ h3 {
     text-align: center;
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }
+
+.hideLoading {
+    display: none;
+}
+
+#loading {
+    margin-left: 1vw;
+}
+
+label {
+    display: block;
+}
+
+.button-fix {
+    margin-top:1rem;
+    margin-bottom:1rem;
+}
+
