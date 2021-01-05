@@ -102,7 +102,7 @@ export default {
         tileSize: 512,
         zoomOffset: -1,
         accessToken:
-          'pk.eyJ1IjoiZGlzdHJpYnN5cyIsImEiOiJja2llZml2aG0xc2dxMnhvNW55bm1hd3U1In0.V731WqpeBOC6a8wwZUwwAA' // Insert access token here
+          'pk.eyJ1IjoiZGlzdHJpYnN5cyIsImEiOiJja2llZml2aG0xc2dxMnhvNW55bm1hd3U1In0.V731WqpeBOC6a8wwZUwwAA' // This is the public access token
       }
     ).addTo(this.map)
 
@@ -127,14 +127,14 @@ export default {
       this.dateTimeCombo = this.availabilityRequest.date + ' ' + this.appointment.startTime
     },
     subscribe() {
-      // set callback handlers
+      // Set callback handlers
       client.onConnectionLost = this.onConnectionLost
       client.onMessageArrived = this.onMessageArrived
 
-      // connect the client
+      // Connect the client
       client.connect({ onSuccess: onConnect })
 
-      // called when the client connects
+      // Called when the client connects
       function onConnect() {
         // Once a connection has been made, make a subscription and send a message.
         console.log('Connected')
@@ -160,7 +160,7 @@ export default {
         client.send(messageThree)
       }
     },
-    // called when the client loses its connection
+    // Called when the client loses its connection
     onConnectionLost(responseObject) {
       if (responseObject.errorCode !== 0) {
         this.availabilityRequest = 'Connection Lost! Try refreshing...'
@@ -204,7 +204,7 @@ export default {
             this.booking.requestId = booking.requestid
             localStorage.setItem('user', JSON.stringify(user))
           } else {
-            // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 110)
+            // Extra check to confirm that user id in localstorage is the same as the typed in user id (similar to line 197)
             if (JSON.parse(localStorage.getItem('user')).userId === this.booking.userId) {
               booking.requestid = JSON.parse(localStorage.getItem('user')).requestId
               booking.requestid = booking.requestid + 1
@@ -233,7 +233,7 @@ export default {
       }
     },
     displayOfficeTimeSlots() {
-      // Creates the times slots for a selected dental office
+      // Creates the time slots for a selected dental office
       var dentistOffice = null
       var appointments = []
 
@@ -279,7 +279,7 @@ export default {
     },
     availability(message, map) {
       this.unavailable = []
-      // match dentist id to marker
+      // Match dentist id to marker
       var schedules = JSON.parse(message.payloadString).schedules
       this.schedules = schedules
 
@@ -327,7 +327,7 @@ export default {
             .setOpacity(1)
             .addTo(layerGroup) // Uses the stored coordinates and adds them to the map as markers
         }
-        // getting data we need for the popups
+        // Getting data we need for the popups
         var officeName = dentists.name
         var dentistNum = dentists.dentists
         var address = dentists.address
@@ -338,7 +338,7 @@ export default {
         var thursHours = dentists.openinghours.thursday
         var friHours = dentists.openinghours.friday
 
-        // adds dental office information as popups on markers
+        // Adds dental office information as popups on markers
 
         marker.bindPopup(
           '<b>Dental office:</b> ' +
