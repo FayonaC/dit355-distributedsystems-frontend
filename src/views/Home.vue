@@ -214,6 +214,8 @@ export default {
                 userId: this.booking.userId,
                 requestId: booking.requestid
               }
+              booking.requestid = user.requestId
+              this.booking.requestId = booking.requestid
               localStorage.setItem('user', JSON.stringify(user))
             }
           }
