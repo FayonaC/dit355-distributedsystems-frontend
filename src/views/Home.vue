@@ -339,7 +339,6 @@ export default {
         var friHours = dentists.openinghours.friday
 
         // Adds dental office information as popups on markers
-
         marker.bindPopup(
           '<b>Dental office:</b> ' +
             officeName +
