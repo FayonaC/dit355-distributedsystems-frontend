@@ -46,9 +46,7 @@ The public mirror can be found [here](https://github.com/dit341/group-00-web).
 
     `npm install`
 
-4. Paste in the MapBox access token on line 105 in Home.vue in the mounted() method
-
-5. Run the frontend server
+4. Run the frontend server
  
     `npm run serve`
 
