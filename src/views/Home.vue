@@ -148,9 +148,10 @@ export default {
         message.qos = 1
         client.send(message)
 
-        client.subscribe('free-slots')
+        client.subscribe('free-slots', subOptions)
         var messageTwo = new Paho.Message('Hello from availability')
         messageTwo.destinationName = 'Availability'
+        messageTwo.qos = 1
         client.send(messageTwo)
 
         client.subscribe('Dentists', subOptions)
